@@ -1,0 +1,98 @@
+
+:root {
+    --bg-color: #b4b4f8;
+    --board-bg: #000000;
+    --cell-bg: #ffffff;
+    --hover-bg: #e7eaed;
+    --text-color: #333333;
+}
+
+body.dark-mode {
+    --bg-color: #4949b8  ;      
+    --board-bg: #ffffff ;      
+    --cell-bg: #1e1e1e;       
+    --hover-bg: #acacac;      
+    --text-color: #aaaaaa;    
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px; 
+    background-color: var(--board-bg);
+    padding: 5px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.cell {
+    background-color: var(--cell-bg);
+    cursor: pointer;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4rem;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.cell:hover {
+    background-color: var(--hover-bg);
+}
+
+#statusDisplay {
+    margin-top: 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+#restartBtn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--cell-bg);
+    background-color: var(--board-bg);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease; 
+}
+
+#restartBtn:hover {
+    /* Un tono ligeramente más oscuro para el hover */
+    background-color:var(--hover-bg); 
+}
+
+#restartBtn:active {
+    /* Efecto de "hundimiento" al pulsar */
+    transform: scale(0.95); 
+}
