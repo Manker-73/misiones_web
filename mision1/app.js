@@ -24,7 +24,7 @@ function handleCellClick(event) {
     }
 
     board[cellIndex] = currentPlayer;
-    clickedCell.innerText = currentPlayer;
+    clickedCell.textContent  = currentPlayer;
 
     checkResult();
 }
@@ -49,19 +49,19 @@ function checkResult() {
     }
 
     if (roundWon) {
-        statusDisplay.innerText = `¡El jugador ${currentPlayer} ha ganado!`;
+        statusDisplay.textContent  = `¡El jugador ${currentPlayer} ha ganado!`;
         isGameActive = false;
         return;
     }
 
     if (!board.includes("")) {
-        statusDisplay.innerText = "¡Empate!";
+        statusDisplay.textContent  = "¡Empate!";
         isGameActive = false;
         return;
     }
 
     currentPlayer = currentPlayer === "X" ? "O" : "X";
-    statusDisplay.innerText = `Turno de ${currentPlayer}`;
+    statusDisplay.textContent  = `Turno de ${currentPlayer}`;
 }
 
 // 4. REINICIO DE PARTIDA
@@ -69,10 +69,10 @@ function restartGame() {
     board = ["", "", "", "", "", "", "", "", ""];
     currentPlayer = "X";
     isGameActive = true;
-    statusDisplay.innerText = `Turno de ${currentPlayer}`;
+    statusDisplay.textContent  = `Turno de ${currentPlayer}`;
     
     cells.forEach(cell => {
-        cell.innerText = "";
+        cell.textContent  = "";
     });
 }
 
