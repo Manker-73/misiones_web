@@ -9,6 +9,19 @@ let board = ["", "", "", "", "", "", "", "", ""];
 let currentPlayer = "X";
 let isGameActive = true;
 
+const boardContainer = document.querySelector(".board");
+
+function initializeBoard() {
+    for (let i = 0; i < 9; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.index = i; 
+        boardContainer.appendChild(cell);
+    }
+}
+
+initializeBoard();
+
 // 2. REFERENCIAS AL DOM
 const cells = document.querySelectorAll(".cell");
 const statusDisplay = document.querySelector("#statusDisplay");
@@ -77,7 +90,6 @@ function restartGame() {
 }
 
 // 5. VINCULACIÓN DE EVENTOS
-const boardContainer = document.querySelector(".board");
 
 boardContainer.addEventListener("click", (event) => {
     if (!event.target.classList.contains("cell")) return;
