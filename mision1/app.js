@@ -87,7 +87,7 @@ restartBtn.addEventListener("click", restartGame);
 
 // 6. ATAJOS DE TECLADO (Modo Oscuro)
 document.addEventListener("keydown", (event) => {
-    if (event.key.toLowerCase() === "<") {
+    if (event.key === "<") {
         document.body.classList.toggle("dark-mode");
     }
 });
