@@ -43,38 +43,28 @@ function handleCellClick(event) {
 }
 
 function checkResult() {
-    let roundWon = false;
-
-    for (let i = 0; i < winningConditions.length; i++) {
-        const winCondition = winningConditions[i];
-        const a = board[winCondition[0]];
-        const b = board[winCondition[1]];
-        const c = board[winCondition[2]];
-
-        if (a === "" || b === "" || c === "") {
-            continue;
-        }
-
-        if (a === b && b === c) {
-            roundWon = true;
-            break;
-        }
-    }
+    const roundWon = winningConditions.some(condition => {
+        const [a, b, c] = condition;
+        return board[a] !== "" && board[a] === board[b] && board[a] === board[c];
+    });
 
     if (roundWon) {
-        statusDisplay.textContent  = `¡El jugador ${currentPlayer} ha ganado!`;
+        statusDisplay.textContent = `¡El jugador ${currentPlayer} ha ganado!`;
         isGameActive = false;
+        // Aquí actualizaremos el marcador (ver paso 3)
         return;
     }
 
-    if (!board.includes("")) {
-        statusDisplay.textContent  = "¡Empate!";
+    const roundDraw = board.every(cell => cell !== "");
+    
+    if (roundDraw) {
+        statusDisplay.textContent = "¡Empate!";
         isGameActive = false;
         return;
     }
 
     currentPlayer = currentPlayer === "X" ? "O" : "X";
-    statusDisplay.textContent  = `Turno de ${currentPlayer}`;
+    statusDisplay.textContent = `Turno de ${currentPlayer}`;
 }
 
 // 4. REINICIO DE PARTIDA
