@@ -28,6 +28,7 @@ function initializeBoard() {
         cell.classList.add("cell");
         cell.dataset.index = i; 
         cell.setAttribute("aria-label", "Celda vacía");
+        cell.setAttribute("tabindex", "0");
         fragment.appendChild(cell);
     }
     boardContainer.appendChild(fragment);
@@ -193,5 +194,47 @@ machineModeToggle.addEventListener("change", (event) => {
 document.addEventListener("keydown", (event) => {
     if (event.key === "<") {
         document.body.classList.toggle("dark-mode");
+    }
+});
+
+// Navegación bidimensional por teclado
+document.addEventListener("keydown", (event) => {
+    const focusedCell = document.activeElement;
+    const isCellFocused = focusedCell.classList.contains("cell");
+
+    // 1. Diccionario de movimientos (Funciones puras)
+    const moveRules = {
+        "ArrowRight": (i) => i % 3 !== 2 ? i + 1 : i,
+        "ArrowLeft":  (i) => i % 3 !== 0 ? i - 1 : i,
+        "ArrowDown":  (i) => i < 6 ? i + 3 : i,
+        "ArrowUp":    (i) => i > 2 ? i - 3 : i
+    };
+
+    // 2. Entrada inicial: Si tocamos una flecha y no hay celda activa, vamos a la casilla 0
+    if (moveRules[event.key] && !isCellFocused) {
+        event.preventDefault();
+        cells[0].focus();
+        return;
+    }
+
+    // Si no estamos en una celda, ignoramos el resto de teclas (Enter, Espacio...)
+    if (!isCellFocused) return;
+
+    // 3. Ejecución de la jugada
+    if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleCellClick({ target: focusedCell });
+        return;
+    }
+
+    // 4. Aplicación del movimiento cuando ya estamos dentro del tablero
+    if (moveRules[event.key]) {
+        event.preventDefault();
+        const currentIndex = parseInt(focusedCell.dataset.index);
+        const nextIndex = moveRules[event.key](currentIndex); 
+        
+        if (nextIndex !== currentIndex) {
+            cells[nextIndex].focus();
+        }
     }
 });

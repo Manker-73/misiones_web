@@ -125,3 +125,9 @@ h1 {
     margin-right: 8px;
     cursor: pointer;
 }
+
+.cell:focus {
+    outline: 4px solid var(--text-color);
+    outline-offset: -4px;
+    background-color: var(--hover-bg);
+}
