@@ -168,11 +168,16 @@ document.addEventListener("keydown", (event) => {
     const focusedCell = document.activeElement;
     const isCellFocused = focusedCell.classList.contains("cell");
 
+    const right = (i) => i % 3 !== 2 ? i + 1 : i;
+    const left  = (i) => i % 3 !== 0 ? i - 1 : i;
+    const down  = (i) => i < 6 ? i + 3 : i;
+    const up    = (i) => i > 2 ? i - 3 : i;
+
     const moveRules = {
-        "ArrowRight": (i) => i % 3 !== 2 ? i + 1 : i,
-        "ArrowLeft":  (i) => i % 3 !== 0 ? i - 1 : i,
-        "ArrowDown":  (i) => i < 6 ? i + 3 : i,
-        "ArrowUp":    (i) => i > 2 ? i - 3 : i
+        "ArrowRight": right, "d": right, "D": right,
+        "ArrowLeft":  left,  "a": left,  "A": left,
+        "ArrowDown":  down,  "s": down,  "S": down,
+        "ArrowUp":    up,    "w": up,    "W": up
     };
 
     if (moveRules[event.key] && !isCellFocused) {
