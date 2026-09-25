@@ -33,8 +33,7 @@ el modo a la mitad o forzar un reinicio automático al tocarlo, porque bloquear
 los ajustes durante el juego protege el progreso del usuario, evita estados 
 inconsistentes y mejora la experiencia de usuario.
 
-4. Genero las casillas del tablero dinámicamente con JavaScript (createElement)
-al cargar la página. Descarté escribir los 9 div de forma fija y manual en el HTML,
-porque inyectarlos por código demuestra una manipulación real del DOM y hace que 
-la arquitectura sea mucho más escalable (por ejemplo, si en el futuro quisiera 
-hacer un tablero de 4x4).
+4. Implementé un modo contra la Máquina la cual tiene una algoritmo heurística
+la cual genera jugadas para en primer lugar intentar ganar, en segundo lugar 
+bloquear una victoria y en tercer lugar una posicion al azar si ninguna de las 
+anteriores es posible.
