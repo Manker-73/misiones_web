@@ -1,6 +1,6 @@
 "use strict";
 
-// 1. CONFIGURACIÓN Y ESTADO
+// 1. ESTADO Y CONFIGURACIÓN GLOBALES
 const winningConditions = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
     [0, 3, 6], [1, 4, 7], [2, 5, 8], 
@@ -12,15 +12,15 @@ let currentPlayer = "X";
 let isGameActive = true;
 let isVsMachine = false;
 let isMachineTurn = false;
-let machineTimeout; // Variable para controlar la asincronía
+let machineTimeout; 
 
-// 2. REFERENCIAS AL DOM
+// 2. REFERENCIAS PRINCIPALES AL DOM
 const boardContainer = document.querySelector(".board");
 const statusDisplay = document.querySelector("#statusDisplay");
 const restartBtn = document.querySelector("#restartBtn");
 const machineModeToggle = document.querySelector("#machineModeToggle");
 
-// Optimización: Uso de DocumentFragment para minimizar reflows
+// 3. INICIALIZACIÓN Y UTILIDADES
 function initializeBoard() {
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < 9; i++) {
@@ -36,20 +36,16 @@ function initializeBoard() {
 
 initializeBoard();
 
-// Seleccionamos las celdas después de haberlas inyectado en el DOM
+// Seleccionamos las celdas una vez inyectadas en el DOM
 const cells = document.querySelectorAll(".cell");
-
-// Función auxiliar para evitar código duplicado
 const isMachineNext = () => isVsMachine && currentPlayer === "O";
 
-// 3. LÓGICA DE CONTROL
+// 4. LÓGICA CENTRAL DEL JUEGO
 function handleCellClick(event) {
     const clickedCell = event.target;
     const cellIndex = parseInt(clickedCell.dataset.index);
 
-    if (board[cellIndex] !== "" || !isGameActive || isMachineTurn) {
-        return;
-    }
+    if (board[cellIndex] !== "" || !isGameActive || isMachineTurn) return;
 
     executeMove(cellIndex, clickedCell);
 }
@@ -58,8 +54,6 @@ function executeMove(index, cellElement) {
     board[index] = currentPlayer;
     cellElement.textContent = currentPlayer;
     cellElement.setAttribute("aria-label", `Celda ocupada por ${currentPlayer}`);
-    
-    // Bloqueamos la posibilidad de cambiar de modo a mitad de partida
     machineModeToggle.disabled = true;
     
     checkResult();
@@ -74,11 +68,10 @@ function makeMachineMove() {
 
     let moveIndex = -1;
 
-    // Función interna para simular y detectar movimientos ganadores
     const findWinningMove = (player) => {
         for (let i = 0; i < emptyIndices.length; i++) {
             const testIndex = emptyIndices[i];
-            board[testIndex] = player; // Simulamos jugada
+            board[testIndex] = player; 
             
             const wins = winningConditions.some(condition => {
                 const [a, b, c] = condition;
@@ -88,21 +81,12 @@ function makeMachineMove() {
             board[testIndex] = "";
             if (wins) return testIndex;
         }
-        return -1; // No hay jugada ganadora
+        return -1; 
     };
 
-    // 1. Intentar ganar la partida en este turno
     moveIndex = findWinningMove("O");
-
-    // 2. Si no podemos ganar, intentar bloquear la victoria de "X"
-    if (moveIndex === -1) {
-        moveIndex = findWinningMove("X");
-    }
-
-    // 3. Si no hay peligro ni victoria inminente, elegir una casilla libre al azar
-    if (moveIndex === -1) {
-        moveIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-    }
+    if (moveIndex === -1) moveIndex = findWinningMove("X");
+    if (moveIndex === -1) moveIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
 
     const cellElement = cells[moveIndex];
     executeMove(moveIndex, cellElement);
@@ -122,35 +106,20 @@ function checkResult() {
     }
 
     if (winningLine) {
-        if (isMachineNext()) {
-            statusDisplay.textContent = "¡La Máquina ha ganado!";
-        } else {
-            statusDisplay.textContent = `¡El jugador ${currentPlayer} ha ganado!`;
-        }
-        
+        statusDisplay.textContent = isMachineNext() ? "¡La Máquina ha ganado!" : `¡El jugador ${currentPlayer} ha ganado!`;
         isGameActive = false;
-        
-        winningLine.forEach(index => {
-            cells[index].classList.add("winning-cell");
-        });
+        winningLine.forEach(index => cells[index].classList.add("winning-cell"));
         return;
     }
 
-    const roundDraw = board.every(cell => cell !== "");
-    
-    if (roundDraw) {
+    if (board.every(cell => cell !== "")) {
         statusDisplay.textContent = "¡Empate!";
         isGameActive = false;
         return;
     }
 
     currentPlayer = currentPlayer === "X" ? "O" : "X";
-    
-    if (isMachineNext()) {
-        statusDisplay.textContent = "Turno de la Máquina";
-    } else {
-        statusDisplay.textContent = `Turno de ${currentPlayer}`;
-    }
+    statusDisplay.textContent = isMachineNext() ? "Turno de la Máquina" : `Turno de ${currentPlayer}`;
 
     if (isMachineNext() && isGameActive) {
         isMachineTurn = true; 
@@ -158,7 +127,7 @@ function checkResult() {
     }
 }
 
-// 4. REINICIO DE PARTIDA
+// 5. REINICIO DE PARTIDA
 function restartGame() {
     clearTimeout(machineTimeout); 
     
@@ -167,8 +136,6 @@ function restartGame() {
     isGameActive = true;
     isMachineTurn = false;
     statusDisplay.textContent = `Turno de ${currentPlayer}`;
-    
-    // Desbloqueamos el selector para permitir cambiar el modo
     machineModeToggle.disabled = false;
     
     cells.forEach(cell => {
@@ -178,10 +145,9 @@ function restartGame() {
     });
 }
 
-// 5. VINCULACIÓN DE EVENTOS
+// 6. VINCULACIÓN DE EVENTOS CENTRALIZADA
 boardContainer.addEventListener("click", (event) => {
-    if (!event.target.classList.contains("cell")) return;
-    handleCellClick(event);
+    if (event.target.classList.contains("cell")) handleCellClick(event);
 });
 
 restartBtn.addEventListener("click", restartGame);
@@ -190,19 +156,18 @@ machineModeToggle.addEventListener("change", (event) => {
     isVsMachine = event.target.checked;
 });
 
-// 6. ATAJOS DE TECLADO (Modo Oscuro)
+// Unificación de navegación por teclado y atajo de modo oscuro
 document.addEventListener("keydown", (event) => {
+    // 6.1. Atajo global para Modo Oscuro
     if (event.key === "<") {
         document.body.classList.toggle("dark-mode");
+        return; // Evita evaluar el resto de reglas si se activa el modo oscuro
     }
-});
 
-// Navegación bidimensional por teclado
-document.addEventListener("keydown", (event) => {
+    // 6.2. Navegación del Tablero
     const focusedCell = document.activeElement;
     const isCellFocused = focusedCell.classList.contains("cell");
 
-    // 1. Diccionario de movimientos (Funciones puras)
     const moveRules = {
         "ArrowRight": (i) => i % 3 !== 2 ? i + 1 : i,
         "ArrowLeft":  (i) => i % 3 !== 0 ? i - 1 : i,
@@ -210,31 +175,25 @@ document.addEventListener("keydown", (event) => {
         "ArrowUp":    (i) => i > 2 ? i - 3 : i
     };
 
-    // 2. Entrada inicial: Si tocamos una flecha y no hay celda activa, vamos a la casilla 0
     if (moveRules[event.key] && !isCellFocused) {
         event.preventDefault();
         cells[0].focus();
         return;
     }
 
-    // Si no estamos en una celda, ignoramos el resto de teclas (Enter, Espacio...)
     if (!isCellFocused) return;
 
-    // 3. Ejecución de la jugada
     if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         handleCellClick({ target: focusedCell });
         return;
     }
 
-    // 4. Aplicación del movimiento cuando ya estamos dentro del tablero
     if (moveRules[event.key]) {
         event.preventDefault();
         const currentIndex = parseInt(focusedCell.dataset.index);
         const nextIndex = moveRules[event.key](currentIndex); 
         
-        if (nextIndex !== currentIndex) {
-            cells[nextIndex].focus();
-        }
+        if (nextIndex !== currentIndex) cells[nextIndex].focus();
     }
 });
