@@ -1,4 +1,4 @@
-
+/* 1. VARIABLES (Custom Properties) */
 :root {
     --bg-color: #b4b4f8;
     --board-bg: #000000;
@@ -9,14 +9,15 @@
 }
 
 body.dark-mode {
-    --bg-color: #4949b8  ;      
-    --board-bg: #ffffff ;      
+    --bg-color: #4949b8;      
+    --board-bg: #ffffff;      
     --cell-bg: #1e1e1e;       
     --hover-bg: #4a4a4a;      
     --text-color: #aaaaaa;    
     --winning-color: #2c8a30;
 }
 
+/* 2. RESET Y BASE */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -27,13 +28,13 @@ body {
     font-family: system-ui, -apple-system, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
-    
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
 }
 
+/* 3. LAYOUT GENERAL */
 .container {
     text-align: center;
 }
@@ -43,37 +44,22 @@ h1 {
     font-size: 2.5rem;
 }
 
-.board {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
-    gap: 5px; 
-    background-color: var(--board-bg);
-    padding: 5px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.cell {
-    background-color: var(--cell-bg);
-    cursor: pointer;
-    
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 4rem;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
-}
-
-.cell:hover {
-    background-color: var(--hover-bg);
-}
-
+/* 4. COMPONENTES: INTERFAZ DE USUARIO */
 #statusDisplay {
     margin-top: 20px;
     font-size: 1.5rem;
     font-weight: bold;
+}
+
+.controls {
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.controls input {
+    margin-right: 8px;
+    cursor: pointer;
 }
 
 #restartBtn {
@@ -90,44 +76,57 @@ h1 {
 }
 
 #restartBtn:hover {
-    /* Un tono ligeramente más oscuro para el hover */
-    background-color:var(--hover-bg); 
+    background-color: var(--hover-bg); 
 }
 
 #restartBtn:active {
-    /* Efecto de "hundimiento" al pulsar */
     transform: scale(0.95); 
 }
 
-/* Definimos los fotogramas clave de la animación */
-@keyframes pop {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.15); } /* Crece un 15% en el punto medio */
-    100% { transform: scale(1); }   /* Vuelve a su tamaño original al terminar */
+/* 5. COMPONENTES: TABLERO Y CELDAS */
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px; 
+    background-color: var(--board-bg);
+    padding: 5px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Aplicamos el resalte y la animación a las celdas ganadoras */
-.winning-cell {
-    background-color: var(--winning-color) !important;
-    color: #ffffff;
-    z-index: 1;
-    
-    animation: pop 1s ease-in-out; 
-}
-
-.controls {
-    margin-bottom: 20px;
-    font-size: 1.2rem;
-    font-weight: 500;
-}
-
-.controls input {
-    margin-right: 8px;
+.cell {
+    background-color: var(--cell-bg);
     cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4rem;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+/* 6. ESTADOS INTERACTIVOS Y ACCESIBILIDAD */
+.cell:hover {
+    background-color: var(--hover-bg);
 }
 
 .cell:focus {
     outline: 4px solid var(--text-color);
     outline-offset: -4px;
     background-color: var(--hover-bg);
+}
+
+/* 7. ANIMACIONES (Fotogramas Clave) */
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); } 
+    100% { transform: scale(1); }   
+}
+
+.winning-cell {
+    background-color: var(--winning-color) !important;
+    color: #ffffff;
+    z-index: 1;
+    animation: pop 1s ease-in-out; 
 }
