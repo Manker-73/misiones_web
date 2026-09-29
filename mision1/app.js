@@ -171,7 +171,7 @@ restartBtn.addEventListener("click", restartGame);
 
 modeToggleBtn.addEventListener("click", () => {
     isVsMachine = !isVsMachine;
-    modeToggleBtn.textContent = isVsMachine ? "Modo: 1 Jugador (IA)" : "Modo: 2 Jugadores";
+    modeToggleBtn.textContent = isVsMachine ? "Modo: 1 Jugador" : "Modo: 2 Jugadores";
 });
 
 document.addEventListener("keydown", (event) => {
