@@ -39,7 +39,6 @@ initializeBoard();
 const cells = document.querySelectorAll(".cell");
 const isMachineNext = () => isVsMachine && currentPlayer === "O";
 
-// Constantes de navegación extraídas para no recrearlas
 const moveMath = {
     right: (i) => i % 3 !== 2 ? i + 1 : i,
     left:  (i) => i % 3 !== 0 ? i - 1 : i,
@@ -181,10 +180,12 @@ document.addEventListener("keydown", (event) => {
         return; 
     }
 
-    const focusedCell = document.activeElement;
-    const isCellFocused = focusedCell.classList.contains("cell");
+    // Cambio central de la Versión 4
+    const focusedElement = document.activeElement;
+    const isCellFocused = focusedElement.classList.contains("cell");
+    const isBodyFocused = focusedElement === document.body;
 
-    if (moveRules[event.key] && !isCellFocused) {
+    if (moveRules[event.key] && isBodyFocused) {
         event.preventDefault();
         cells[0].focus();
         return;
@@ -194,13 +195,13 @@ document.addEventListener("keydown", (event) => {
 
     if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        handleCellClick({ target: focusedCell });
+        handleCellClick({ target: focusedElement });
         return;
     }
 
     if (moveRules[event.key]) {
         event.preventDefault();
-        const currentIndex = parseInt(focusedCell.dataset.index, 10);
+        const currentIndex = parseInt(focusedElement.dataset.index, 10);
         const nextIndex = moveRules[event.key](currentIndex); 
         
         if (nextIndex !== currentIndex) cells[nextIndex].focus();
