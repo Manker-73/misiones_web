@@ -182,26 +182,29 @@ document.addEventListener("keydown", (event) => {
     }
 
     // 6.2. Navegación del Tablero
-    const focusedCell = document.activeElement;
-    const isCellFocused = focusedCell.classList.contains("cell");
+    const focusedElement = document.activeElement;
+    const isCellFocused = focusedElement.classList.contains("cell");
+    const isBodyFocused = focusedElement === document.body;
 
-    if (moveRules[event.key] && !isCellFocused) {
+    // Solo robamos el foco si el usuario está en el fondo de la página
+    if (moveRules[event.key] && isBodyFocused) {
         event.preventDefault();
         cells[0].focus();
         return;
     }
 
+    // Si está en un botón o checkbox, ignoramos el atajo para no interferir
     if (!isCellFocused) return;
 
     if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        handleCellClick({ target: focusedCell });
+        handleCellClick({ target: focusedElement });
         return;
     }
 
     if (moveRules[event.key]) {
         event.preventDefault();
-        const currentIndex = parseInt(focusedCell.dataset.index,10);
+        const currentIndex = parseInt(focusedElement.dataset.index, 10);
         const nextIndex = moveRules[event.key](currentIndex); 
         
         if (nextIndex !== currentIndex) cells[nextIndex].focus();
