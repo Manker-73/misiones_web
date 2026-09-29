@@ -152,7 +152,7 @@ function restartGame() {
     isMachineTurn = false;
     statusDisplay.textContent = `Turno de ${currentPlayer}`;
     machineModeToggle.disabled = false;
-    modeLabel.textContent = isVsMachine ? "Jugar contra Máquina 🤖" : "Jugar contra Humano 👤";
+    modeLabel.textContent = isVsMachine ? "Jugar contra Máquina" : "Jugar contra Humano";
     
     cells.forEach(cell => {
         cell.textContent = "";
