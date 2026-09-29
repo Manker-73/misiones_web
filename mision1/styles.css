@@ -58,11 +58,6 @@ h1 {
 }
 
 
-#modeLabel {
-    display: inline-block;
-    min-width: 24ch; /* Reserva el espacio exacto para 24 letras */
-    text-align: center; 
-}
 
 #restartBtn {
     margin-top: 20px;
