@@ -172,7 +172,7 @@ const modeLabel = document.querySelector("#modeLabel");
 
 machineModeToggle.addEventListener("change", (event) => {
     isVsMachine = event.target.checked;
-    modeLabel.textContent = isVsMachine ? "Jugar contra Máquina 🤖" : "Jugar contra Humano 👤";
+    modeLabel.textContent = isVsMachine ? "Jugar contra Máquina" : "Jugar contra Humano";
 });
 
 // Unificación de navegación por teclado y atajo de modo oscuro
