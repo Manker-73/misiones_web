@@ -57,7 +57,27 @@ h1 {
     font-weight: 500;
 }
 
+#modeToggleBtn {
+    min-width: 24ch; 
+    padding: 8px 16px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--cell-bg);
+    background-color: var(--text-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+}
 
+#modeToggleBtn:active:not(:disabled) {
+    transform: scale(0.95); 
+}
+
+#modeToggleBtn:disabled {
+    opacity: 0.5; 
+    cursor: not-allowed;
+}
 
 #restartBtn {
     margin-top: 20px;
