@@ -14,6 +14,13 @@ let isVsMachine = false;
 let isMachineTurn = false;
 let machineTimeout; 
 
+const textos = {
+    mode1P: "Modo: 1 Jugador (IA)",
+    mode2P: "Modo: 2 Jugadores",
+    playing1P: "Jugando: 1 Jugador (IA)",
+    playing2P: "Jugando: 2 Jugadores"
+};
+
 // 2. REFERENCIAS PRINCIPALES AL DOM
 const boardContainer = document.querySelector(".board");
 const statusDisplay = document.querySelector("#statusDisplay");
