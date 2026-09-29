@@ -76,7 +76,7 @@ function executeMove(index, cellElement) {
     cellElement.setAttribute("aria-label", `Celda ocupada por ${currentPlayer}`);
     
     modeToggleBtn.disabled = true;
-    modeToggleBtn.textContent = isVsMachine ? "Jugando: 1 Jugador" : "Jugando: 2 Jugadores";
+    modeToggleBtn.textContent = isVsMachine ? textos.playing1P : textos.playing2P;
     
     checkResult();
 }
