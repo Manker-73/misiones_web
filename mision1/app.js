@@ -70,7 +70,7 @@ function executeMove(index, cellElement) {
     cellElement.setAttribute("aria-label", `Celda ocupada por ${currentPlayer}`);
     machineModeToggle.disabled = true;
     modeLabel.textContent = isVsMachine ? "Jugando contra Máquina 🤖" : "Jugando contra Humano 👤";
-    
+
     checkResult();
 }
 
@@ -152,6 +152,7 @@ function restartGame() {
     isMachineTurn = false;
     statusDisplay.textContent = `Turno de ${currentPlayer}`;
     machineModeToggle.disabled = false;
+    modeLabel.textContent = isVsMachine ? "Jugar contra Máquina 🤖" : "Jugar contra Humano 👤";
     
     cells.forEach(cell => {
         cell.textContent = "";
