@@ -34,7 +34,19 @@ function initializeBoard() {
     boardContainer.appendChild(fragment);
 }
 
+const moveMath = {
+    right: (i) => i % 3 !== 2 ? i + 1 : i,
+    left:  (i) => i % 3 !== 0 ? i - 1 : i,
+    down:  (i) => i < 6 ? i + 3 : i,
+    up:    (i) => i > 2 ? i - 3 : i
+};
 
+const moveRules = {
+    "ArrowRight": moveMath.right, "d": moveMath.right, "D": moveMath.right,
+    "ArrowLeft":  moveMath.left,  "a": moveMath.left,  "A": moveMath.left,
+    "ArrowDown":  moveMath.down,  "s": moveMath.down,  "S": moveMath.down,
+    "ArrowUp":    moveMath.up,    "w": moveMath.up,    "W": moveMath.up
+};
 
 initializeBoard();
 
