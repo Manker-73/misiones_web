@@ -57,10 +57,6 @@ h1 {
     font-weight: 500;
 }
 
-.controls input {
-    margin-right: 8px;
-    cursor: pointer;
-}
 
 #modeLabel {
     display: inline-block;
