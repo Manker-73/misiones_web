@@ -39,10 +39,24 @@ initializeBoard();
 const cells = document.querySelectorAll(".cell");
 const isMachineNext = () => isVsMachine && currentPlayer === "O";
 
+// Constantes de navegación extraídas para no recrearlas
+const moveMath = {
+    right: (i) => i % 3 !== 2 ? i + 1 : i,
+    left:  (i) => i % 3 !== 0 ? i - 1 : i,
+    down:  (i) => i < 6 ? i + 3 : i,
+    up:    (i) => i > 2 ? i - 3 : i
+};
+
+const moveRules = {
+    "ArrowRight": moveMath.right, "d": moveMath.right, "D": moveMath.right,
+    "ArrowLeft":  moveMath.left,  "a": moveMath.left,  "A": moveMath.left,
+    "ArrowDown":  moveMath.down,  "s": moveMath.down,  "S": moveMath.down,
+    "ArrowUp":    moveMath.up,    "w": moveMath.up,    "W": moveMath.up
+};
+
 // 4. LÓGICA CENTRAL DEL JUEGO
 function handleCellClick(event) {
     const clickedCell = event.target;
-    // Cambio en esta línea: Radix 10
     const cellIndex = parseInt(clickedCell.dataset.index, 10);
 
     if (board[cellIndex] !== "" || !isGameActive || isMachineTurn) return;
@@ -170,18 +184,6 @@ document.addEventListener("keydown", (event) => {
     const focusedCell = document.activeElement;
     const isCellFocused = focusedCell.classList.contains("cell");
 
-    const right = (i) => i % 3 !== 2 ? i + 1 : i;
-    const left  = (i) => i % 3 !== 0 ? i - 1 : i;
-    const down  = (i) => i < 6 ? i + 3 : i;
-    const up    = (i) => i > 2 ? i - 3 : i;
-
-    const moveRules = {
-        "ArrowRight": right, "d": right, "D": right,
-        "ArrowLeft":  left,  "a": left,  "A": left,
-        "ArrowDown":  down,  "s": down,  "S": down,
-        "ArrowUp":    up,    "w": up,    "W": up
-    };
-
     if (moveRules[event.key] && !isCellFocused) {
         event.preventDefault();
         cells[0].focus();
@@ -198,7 +200,6 @@ document.addEventListener("keydown", (event) => {
 
     if (moveRules[event.key]) {
         event.preventDefault();
-        // Cambio en esta línea: Radix 10
         const currentIndex = parseInt(focusedCell.dataset.index, 10);
         const nextIndex = moveRules[event.key](currentIndex); 
         
