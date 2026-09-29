@@ -160,7 +160,7 @@ function restartGame() {
     statusDisplay.textContent = `Turno de ${currentPlayer}`;
     
     modeToggleBtn.disabled = false;
-    modeToggleBtn.textContent = isVsMachine ? "Modo: 1 Jugador" : "Modo: 2 Jugadores";
+    modeToggleBtn.textContent = isVsMachine ? textos.mode1P : textos.mode2P;
     
     cells.forEach(cell => {
         cell.textContent = "";
