@@ -43,7 +43,7 @@ const isMachineNext = () => isVsMachine && currentPlayer === "O";
 // 4. LÓGICA CENTRAL DEL JUEGO
 function handleCellClick(event) {
     const clickedCell = event.target;
-    const cellIndex = parseInt(clickedCell.dataset.index);
+    const cellIndex = parseInt(clickedCell.dataset.index, 10);
 
     if (board[cellIndex] !== "" || !isGameActive || isMachineTurn) return;
 
@@ -196,7 +196,7 @@ document.addEventListener("keydown", (event) => {
 
     if (moveRules[event.key]) {
         event.preventDefault();
-        const currentIndex = parseInt(focusedCell.dataset.index);
+        const currentIndex = parseInt(focusedCell.dataset.index,10);
         const nextIndex = moveRules[event.key](currentIndex); 
         
         if (nextIndex !== currentIndex) cells[nextIndex].focus();
