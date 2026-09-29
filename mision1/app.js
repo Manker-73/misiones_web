@@ -18,7 +18,7 @@ let machineTimeout;
 const boardContainer = document.querySelector(".board");
 const statusDisplay = document.querySelector("#statusDisplay");
 const restartBtn = document.querySelector("#restartBtn");
-const machineModeToggle = document.querySelector("#machineModeToggle");
+const modeToggleBtn = document.querySelector("#modeToggleBtn");
 
 // 3. INICIALIZACIÓN Y UTILIDADES
 function initializeBoard() {
@@ -34,30 +34,15 @@ function initializeBoard() {
     boardContainer.appendChild(fragment);
 }
 
-const moveMath = {
-    right: (i) => i % 3 !== 2 ? i + 1 : i,
-    left:  (i) => i % 3 !== 0 ? i - 1 : i,
-    down:  (i) => i < 6 ? i + 3 : i,
-    up:    (i) => i > 2 ? i - 3 : i
-};
-
-const moveRules = {
-    "ArrowRight": moveMath.right, "d": moveMath.right, "D": moveMath.right,
-    "ArrowLeft":  moveMath.left,  "a": moveMath.left,  "A": moveMath.left,
-    "ArrowDown":  moveMath.down,  "s": moveMath.down,  "S": moveMath.down,
-    "ArrowUp":    moveMath.up,    "w": moveMath.up,    "W": moveMath.up
-};
-
 initializeBoard();
 
-// Seleccionamos las celdas una vez inyectadas en el DOM
 const cells = document.querySelectorAll(".cell");
 const isMachineNext = () => isVsMachine && currentPlayer === "O";
 
 // 4. LÓGICA CENTRAL DEL JUEGO
 function handleCellClick(event) {
     const clickedCell = event.target;
-    const cellIndex = parseInt(clickedCell.dataset.index, 10);
+    const cellIndex = parseInt(clickedCell.dataset.index);
 
     if (board[cellIndex] !== "" || !isGameActive || isMachineTurn) return;
 
@@ -68,9 +53,10 @@ function executeMove(index, cellElement) {
     board[index] = currentPlayer;
     cellElement.textContent = currentPlayer;
     cellElement.setAttribute("aria-label", `Celda ocupada por ${currentPlayer}`);
-    machineModeToggle.disabled = true;
-    modeLabel.textContent = isVsMachine ? "Jugando: 1 Jugador" : "Jugando: 2 Jugadores";
-
+    
+    modeToggleBtn.disabled = true;
+    modeToggleBtn.textContent = isVsMachine ? "Jugando: 1 Jugador (IA)" : "Jugando: 2 Jugadores";
+    
     checkResult();
 }
 
@@ -151,8 +137,9 @@ function restartGame() {
     isGameActive = true;
     isMachineTurn = false;
     statusDisplay.textContent = `Turno de ${currentPlayer}`;
-    machineModeToggle.disabled = false;
-    modeLabel.textContent = isVsMachine ? "Jugando: 1 Jugador" : "Jugando: 2 Jugadores";
+    
+    modeToggleBtn.disabled = false;
+    modeToggleBtn.textContent = isVsMachine ? "Modo: 1 Jugador (IA)" : "Modo: 2 Jugadores";
     
     cells.forEach(cell => {
         cell.textContent = "";
@@ -168,45 +155,49 @@ boardContainer.addEventListener("click", (event) => {
 
 restartBtn.addEventListener("click", restartGame);
 
-const modeLabel = document.querySelector("#modeLabel"); 
-
-machineModeToggle.addEventListener("change", (event) => {
-    isVsMachine = event.target.checked;
-    modeLabel.textContent = isVsMachine ? "Modo: 1 Jugador" : "Modo: 2 Jugadores";
+modeToggleBtn.addEventListener("click", () => {
+    isVsMachine = !isVsMachine;
+    modeToggleBtn.textContent = isVsMachine ? "Modo: 1 Jugador (IA)" : "Modo: 2 Jugadores";
 });
 
-// Unificación de navegación por teclado y atajo de modo oscuro
 document.addEventListener("keydown", (event) => {
-    // 6.1. Atajo global para Modo Oscuro
     if (event.key === "<") {
         document.body.classList.toggle("dark-mode");
-        return; // Evita evaluar el resto de reglas si se activa el modo oscuro
+        return; 
     }
 
-    // 6.2. Navegación del Tablero
-    const focusedElement = document.activeElement;
-    const isCellFocused = focusedElement.classList.contains("cell");
-    const isBodyFocused = focusedElement === document.body;
+    const focusedCell = document.activeElement;
+    const isCellFocused = focusedCell.classList.contains("cell");
 
-    // Solo robamos el foco si el usuario está en el fondo de la página
-    if (moveRules[event.key] && isBodyFocused) {
+    const right = (i) => i % 3 !== 2 ? i + 1 : i;
+    const left  = (i) => i % 3 !== 0 ? i - 1 : i;
+    const down  = (i) => i < 6 ? i + 3 : i;
+    const up    = (i) => i > 2 ? i - 3 : i;
+
+    const moveRules = {
+        "ArrowRight": right, "d": right, "D": right,
+        "ArrowLeft":  left,  "a": left,  "A": left,
+        "ArrowDown":  down,  "s": down,  "S": down,
+        "ArrowUp":    up,    "w": up,    "W": up
+    };
+
+    if (moveRules[event.key] && !isCellFocused) {
         event.preventDefault();
         cells[0].focus();
         return;
     }
 
-    // Si está en un botón o checkbox, ignoramos el atajo para no interferir
     if (!isCellFocused) return;
 
     if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        handleCellClick({ target: focusedElement });
+        handleCellClick({ target: focusedCell });
         return;
     }
 
     if (moveRules[event.key]) {
         event.preventDefault();
-        const currentIndex = parseInt(focusedElement.dataset.index, 10);
+        const currentIndex = parseInt(focusedCell.dataset.index);
         const nextIndex = moveRules[event.key](currentIndex); 
         
         if (nextIndex !== currentIndex) cells[nextIndex].focus();
