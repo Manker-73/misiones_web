@@ -69,7 +69,7 @@ function executeMove(index, cellElement) {
     cellElement.setAttribute("aria-label", `Celda ocupada por ${currentPlayer}`);
     
     modeToggleBtn.disabled = true;
-    modeToggleBtn.textContent = isVsMachine ? "Jugando: 1 Jugador (IA)" : "Jugando: 2 Jugadores";
+    modeToggleBtn.textContent = isVsMachine ? "Jugando: 1 Jugador" : "Jugando: 2 Jugadores";
     
     checkResult();
 }
@@ -153,7 +153,7 @@ function restartGame() {
     statusDisplay.textContent = `Turno de ${currentPlayer}`;
     
     modeToggleBtn.disabled = false;
-    modeToggleBtn.textContent = isVsMachine ? "Modo: 1 Jugador (IA)" : "Modo: 2 Jugadores";
+    modeToggleBtn.textContent = isVsMachine ? "Modo: 1 Jugador" : "Modo: 2 Jugadores";
     
     cells.forEach(cell => {
         cell.textContent = "";
