@@ -1,6 +1,23 @@
 "use strict";
 
 // 1. ESTADO Y CONFIGURACIÓN GLOBALES
+const CONFIG = {
+    secretKey: "<",
+    texts: {
+        modeIdle1P: "Modo: 1 Jugador",
+        modeIdle2P: "Modo: 2 Jugadores",
+        modePlaying1P: "Jugando: 1 Jugador",
+        modePlaying2P: "Jugando: 2 Jugadores",
+        winMachine: "¡La Máquina ha ganado!",
+        winPlayer: (player) => `¡El jugador ${player} ha ganado!`,
+        draw: "¡Empate!",
+        turnMachine: "Turno de la Máquina",
+        turnPlayer: (player) => `Turno de ${player}`,
+        ariaEmpty: "Celda vacía",
+        ariaOccupied: (player) => `Celda ocupada por ${player}`
+    }
+};
+
 const winningConditions = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
     [0, 3, 6], [1, 4, 7], [2, 5, 8], 
@@ -13,13 +30,6 @@ let isGameActive = true;
 let isVsMachine = false;
 let isMachineTurn = false;
 let machineTimeout; 
-
-const textos = {
-    mode1P: "Modo: 1 Jugador (IA)",
-    mode2P: "Modo: 2 Jugadores",
-    playing1P: "Jugando: 1 Jugador (IA)",
-    playing2P: "Jugando: 2 Jugadores"
-};
 
 // 2. REFERENCIAS PRINCIPALES AL DOM
 const boardContainer = document.querySelector(".board");
@@ -34,7 +44,7 @@ function initializeBoard() {
         const cell = document.createElement("div");
         cell.classList.add("cell");
         cell.dataset.index = i; 
-        cell.setAttribute("aria-label", "Celda vacía");
+        cell.setAttribute("aria-label", CONFIG.texts.ariaEmpty);
         cell.setAttribute("tabindex", "0");
         fragment.appendChild(cell);
     }
@@ -61,22 +71,21 @@ const moveRules = {
 };
 
 // 4. LÓGICA CENTRAL DEL JUEGO
-function handleCellClick(event) {
-    const clickedCell = event.target;
-    const cellIndex = parseInt(clickedCell.dataset.index, 10);
+function processCell(cellElement) {
+    const cellIndex = parseInt(cellElement.dataset.index, 10);
 
     if (board[cellIndex] !== "" || !isGameActive || isMachineTurn) return;
 
-    executeMove(cellIndex, clickedCell);
+    executeMove(cellIndex, cellElement);
 }
 
 function executeMove(index, cellElement) {
     board[index] = currentPlayer;
     cellElement.textContent = currentPlayer;
-    cellElement.setAttribute("aria-label", `Celda ocupada por ${currentPlayer}`);
+    cellElement.setAttribute("aria-label", CONFIG.texts.ariaOccupied(currentPlayer));
     
     modeToggleBtn.disabled = true;
-    modeToggleBtn.textContent = isVsMachine ? textos.playing1P : textos.playing2P;
+    modeToggleBtn.textContent = isVsMachine ? CONFIG.texts.modePlaying1P : CONFIG.texts.modePlaying2P;
     
     checkResult();
 }
@@ -117,31 +126,26 @@ function makeMachineMove() {
 }
 
 function checkResult() {
-    let winningLine = null;
-
-    for (const condition of winningConditions) {
+    const winningLine = winningConditions.find(condition => {
         const [a, b, c] = condition;
-        if (board[a] !== "" && board[a] === board[b] && board[a] === board[c]) {
-            winningLine = condition;
-            break;
-        }
-    }
+        return board[a] !== "" && board[a] === board[b] && board[a] === board[c];
+    });
 
     if (winningLine) {
-        statusDisplay.textContent = isMachineNext() ? "¡La Máquina ha ganado!" : `¡El jugador ${currentPlayer} ha ganado!`;
+        statusDisplay.textContent = isMachineNext() ? CONFIG.texts.winMachine : CONFIG.texts.winPlayer(currentPlayer);
         isGameActive = false;
         winningLine.forEach(index => cells[index].classList.add("winning-cell"));
         return;
     }
 
     if (board.every(cell => cell !== "")) {
-        statusDisplay.textContent = "¡Empate!";
+        statusDisplay.textContent = CONFIG.texts.draw;
         isGameActive = false;
         return;
     }
 
     currentPlayer = currentPlayer === "X" ? "O" : "X";
-    statusDisplay.textContent = isMachineNext() ? "Turno de la Máquina" : `Turno de ${currentPlayer}`;
+    statusDisplay.textContent = isMachineNext() ? CONFIG.texts.turnMachine : CONFIG.texts.turnPlayer(currentPlayer);
 
     if (isMachineNext() && isGameActive) {
         isMachineTurn = true; 
@@ -157,37 +161,38 @@ function restartGame() {
     currentPlayer = "X";
     isGameActive = true;
     isMachineTurn = false;
-    statusDisplay.textContent = `Turno de ${currentPlayer}`;
+    statusDisplay.textContent = CONFIG.texts.turnPlayer(currentPlayer);
     
     modeToggleBtn.disabled = false;
-    modeToggleBtn.textContent = isVsMachine ? textos.mode1P : textos.mode2P;
+    modeToggleBtn.textContent = isVsMachine ? CONFIG.texts.modeIdle1P : CONFIG.texts.modeIdle2P;
     
     cells.forEach(cell => {
         cell.textContent = "";
         cell.classList.remove("winning-cell");
-        cell.setAttribute("aria-label", "Celda vacía");
+        cell.setAttribute("aria-label", CONFIG.texts.ariaEmpty);
     });
 }
 
 // 6. VINCULACIÓN DE EVENTOS CENTRALIZADA
 boardContainer.addEventListener("click", (event) => {
-    if (event.target.classList.contains("cell")) handleCellClick(event);
+    if (event.target.classList.contains("cell")) {
+        processCell(event.target);
+    }
 });
 
 restartBtn.addEventListener("click", restartGame);
 
 modeToggleBtn.addEventListener("click", () => {
     isVsMachine = !isVsMachine;
-    modeToggleBtn.textContent = isVsMachine ? "Modo: 1 Jugador" : "Modo: 2 Jugadores";
+    modeToggleBtn.textContent = isVsMachine ? CONFIG.texts.modeIdle1P : CONFIG.texts.modeIdle2P;
 });
 
 document.addEventListener("keydown", (event) => {
-    if (event.key === "<") {
+    if (event.key === CONFIG.secretKey) {
         document.body.classList.toggle("dark-mode");
         return; 
     }
 
-    // Cambio central de la Versión 4
     const focusedElement = document.activeElement;
     const isCellFocused = focusedElement.classList.contains("cell");
     const isBodyFocused = focusedElement === document.body;
@@ -202,7 +207,7 @@ document.addEventListener("keydown", (event) => {
 
     if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        handleCellClick({ target: focusedElement });
+        processCell(focusedElement);
         return;
     }
 
