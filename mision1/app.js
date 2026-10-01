@@ -72,6 +72,11 @@ const moveRules = {
 
 // 4. LÓGICA CENTRAL DEL JUEGO
 function processCell(cellElement) {
+
+    if (!cellElement || !cellElement.classList.contains("cell") || cellElement.dataset.index === undefined) {
+        return;
+    }
+    
     const cellIndex = parseInt(cellElement.dataset.index, 10);
 
     if (board[cellIndex] !== "" || !isGameActive || isMachineTurn) return;
