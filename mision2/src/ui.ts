@@ -1,5 +1,5 @@
 // Importamos la interfaz para tipar el parámetro
-import { Cuber } from './transformers';
+import type { Cuber } from './transformers';
 
 const app = document.getElementById('app') as HTMLDivElement;
 
