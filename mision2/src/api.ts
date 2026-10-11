@@ -10,7 +10,7 @@ export const fetchRanking = async (evento: string, tipo: string) => {
     }
 
     // Fetch tradicional si no hay caché
-    console.log("🌐 Descargando desde la API...");
+    console.log("Descargando desde la API");
     const response = await fetch(url);
     
     // Controlar si la API se cae

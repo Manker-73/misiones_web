@@ -16,7 +16,7 @@ btnCargar.addEventListener('click', async () => {
         // 2. Extraer el top 50
         const top50Crudo = rankingCrudo.items.slice(0, 50);
         
-        // 3. Cruzar datos asíncronamente (Camino B: Promise.all)
+        // 3. Cruzar datos asíncronamente
         // Por cada competidor, hacemos una petición simultánea para descubrir su identidad
         const datosConNombresPromises = top50Crudo.map(async (item: any) => {
             const detalles = await fetchCuberDetails(item.personId);
@@ -29,7 +29,7 @@ btnCargar.addEventListener('click', async () => {
             };
         });
 
-        // Esperamos a que se resuelvan las 10 peticiones a la vez
+        // Esperamos a que se resuelvan las peticiones
         const datosCompletos = await Promise.all(datosConNombresPromises);
         
         // 4. Ejecutar transformaciones puras
