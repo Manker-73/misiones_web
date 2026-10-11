@@ -37,11 +37,20 @@ export const fetchCuberDetails = async (personId: string) => {
 
     try {
         const response = await fetch(url);
-        if (!response.ok) return null; // Si el competidor no existe o falla, devolvemos null
+        if (!response.ok) return null; 
         
         const data = await response.json();
-        localStorage.setItem(cacheKey, JSON.stringify(data));
-        return data;
+        
+        // OPTIMIZACIÓN: Creamos un objeto ligero solo con los datos vitales
+        const dataLigera = {
+            name: data.name,
+            country: data.country
+        };
+        
+        // Guardamos la versión ligera (ocupa unos pocos bytes, nunca llenará la cuota)
+        localStorage.setItem(cacheKey, JSON.stringify(dataLigera));
+        
+        return dataLigera;
     } catch (error) {
         console.error(`Error al buscar detalles de ${personId}:`, error);
         return null;
