@@ -16,9 +16,9 @@ export const filtrarPorPais = (cubers: Cuber[], pais: string): Cuber[] => {
     return cubers.filter(cuber => cuber.pais === pais);
 };
 
-// 3. Método REDUCE: Para el análisis matemático (Bonus)
+// 3. Método REDUCE: Para el análisis matemático
 export const calcularMediaTop = (cubers: Cuber[]) => {
-    // Si el array está vacío (ej. filtramos por un país sin top 10), evitamos errores
+    // Si el array está vacío evitamos errores
     if (cubers.length === 0) {
         console.log("No hay competidores para analizar.");
         return;
@@ -31,5 +31,5 @@ export const calcularMediaTop = (cubers: Cuber[]) => {
     const media = (sumaTotal / cubers.length / 100).toFixed(2);
     
     // Imprimimos el resultado analítico en la consola
-    console.log(`📊 Análisis Táctico: La media del Top ${cubers.length} en pantalla es ${media} segundos.`);
+    console.log(`La media del Top ${cubers.length} en pantalla es ${media} segundos.`);
 };
