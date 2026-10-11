@@ -1,19 +1,8 @@
 import type { Cuber } from './transformers';
+import { nombresPaises } from './paises';
 
 const app = document.getElementById('app') as HTMLDivElement;
 
-// Diccionario de traducción visual
-const nombresPaises: { [key: string]: string } = {
-    'ES': 'España',
-    'US': 'Estados Unidos',
-    'CN': 'China',
-    'PL': 'Polonia',
-    'KR': 'Corea del Sur',
-    'AU': 'Australia',
-    'FR': 'Francia'
-};
-
-// --- HELPERS (Funciones de ayuda para no escribir HTML en crudo) ---
 
 // Función para vaciar el contenedor de forma segura
 const limpiarContenedor = () => {
@@ -52,8 +41,6 @@ const construirTarjetaCuber = (cuber: Cuber, index: number): HTMLElement => {
     return article;
 };
 
-// --- FUNCIONES EXPORTADAS (Tu API pública de la interfaz) ---
-
 export const mostrarLoader = () => {
     limpiarContenedor();
     const contenedor = crearElemento('div', ['mensaje-estado']);
@@ -90,7 +77,7 @@ export const pintarResultados = (cubers: Cuber[]) => {
     // MAP: Transformamos el array de datos en un array de Elementos DOM reales
     const tarjetasDOM = cubers.map((cuber, index) => construirTarjetaCuber(cuber, index));
 
-    // Añadimos todas las tarjetas al contenedor usando sintaxis spread (muy idiomático y eficiente)
+    // Añadimos todas las tarjetas al contenedor usando sintaxis spread
     gridContainer.append(...tarjetasDOM);
     
     // Añadimos el grid al DOM principal
