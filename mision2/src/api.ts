@@ -1,5 +1,5 @@
 export const fetchRanking = async (evento: string, tipo: string) => {
-    const url = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/master/api/rank/World/${tipo}/${evento}.json`;
+    const url = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/refs/heads/v1/rank/world/${tipo}/${evento}.json`;
     const cacheKey = `wca_${evento}_${tipo}`;
 
     // BONUS: Comprobar Caché
