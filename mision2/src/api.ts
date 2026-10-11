@@ -5,7 +5,7 @@ export const fetchRanking = async (evento: string, tipo: string) => {
     //Comprobar Caché
     const datosCacheados = localStorage.getItem(cacheKey);
     if (datosCacheados) {
-        console.log("⚡ Cargado desde LocalStorage instantáneamente");
+        console.log("Cargado desde LocalStorage");
         return JSON.parse(datosCacheados);
     }
 
