@@ -1,38 +1,35 @@
+// 1. Definimos la "forma" de nuestros datos para que TypeScript nos ayude
 export interface Cuber {
     id: string;
     nombre: string;
     pais: string;
     tiempoS: string;
-    tiempoMs: number; // En centisegundos reales para hacer cálculos
+    tiempoMs: number;
 }
 
-export const limpiarDatos = (datosCrudos: any): Cuber[] => {
-    // 1. Imprimimos el primer competidor para ver sus verdaderos nombres de propiedad
-    console.log("👀 Estructura real de la API v1:", datosCrudos.items[0]);
-
-    // 2. Mapeamos usando alternativas con el operador || (OR)
-    return datosCrudos.items.map((item: any) => ({
-        id: item.personId || item.id,
-        nombre: item.name || item.personName || "Nombre desconocido", // Probablemente ahora sea solo 'name'
-        pais: item.countryId || item.country || "País desconocido", // La WCA suele usar 'countryId'
-        tiempoS: (item.best / 100).toFixed(2) + "s",
-        tiempoMs: item.best
-    }));
-};
-
+// 2. Método FILTER: Para la funcionalidad de filtrado por país
 export const filtrarPorPais = (cubers: Cuber[], pais: string): Cuber[] => {
+    // Si el usuario elige "All" (Todo el mundo), devolvemos el array intacto
     if (pais === 'All') return cubers;
-    // FILTER: Filtramos por nacionalidad
+    
+    // Si no, devolvemos solo los que coincidan con el país elegido
     return cubers.filter(cuber => cuber.pais === pais);
 };
 
+// 3. Método REDUCE: Para el análisis matemático (Bonus)
 export const calcularMediaTop = (cubers: Cuber[]) => {
-    if (cubers.length === 0) return;
+    // Si el array está vacío (ej. filtramos por un país sin top 10), evitamos errores
+    if (cubers.length === 0) {
+        console.log("No hay competidores para analizar.");
+        return;
+    }
     
-    // REDUCE: Sacar la media aritmética de los 10 primeros resultados
-    const top10 = cubers.slice(0, 10);
-    const sumaTotal = top10.reduce((acumulador, cuber) => acumulador + cuber.tiempoMs, 0);
-    const media = (sumaTotal / top10.length / 100).toFixed(2);
+    // Reducimos el array para sumar todos los tiempos en milisegundos
+    const sumaTotal = cubers.reduce((acumulador, cuber) => acumulador + cuber.tiempoMs, 0);
     
-    console.log(`📊 Análisis: La media del Top ${top10.length} de esta lista es ${media} segundos.`);
+    // Calculamos la media y la formateamos a segundos
+    const media = (sumaTotal / cubers.length / 100).toFixed(2);
+    
+    // Imprimimos el resultado analítico en la consola
+    console.log(`📊 Análisis Táctico: La media del Top ${cubers.length} en pantalla es ${media} segundos.`);
 };

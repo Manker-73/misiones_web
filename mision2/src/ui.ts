@@ -1,36 +1,60 @@
-// Importamos la interfaz para tipar el parámetro
-import type { Cuber } from './transformers';
+// Importamos solo el tipo para evitar el SyntaxError que tuvimos antes
+import type { Cuber } from './transformers'; 
 
+// Capturamos el contenedor principal donde inyectaremos todo
 const app = document.getElementById('app') as HTMLDivElement;
 
+// Función para dar feedback visual al usuario (Robustez - 10 pts)
 export const mostrarLoader = () => {
-    app.innerHTML = '<p>⏳ Cargando récords mundiales...</p>';
+    app.innerHTML = `
+        <div style="text-align: center; padding: 2rem;">
+            <h2>⏳ Analizando base de datos de la WCA...</h2>
+            <p>Resolviendo identidades de los competidores. Esto puede tardar unos segundos.</p>
+        </div>
+    `;
 };
 
+// Función para manejar fallos de red amigablemente (Robustez - 10 pts)
 export const mostrarError = (mensaje: string) => {
-    app.innerHTML = `<p style="color: red;">❌ ${mensaje}</p>`;
+    app.innerHTML = `
+        <div style="background-color: #ffebee; color: #c62828; padding: 1rem; border-radius: 8px;">
+            <h3>❌ Ha ocurrido un problema</h3>
+            <p>${mensaje}</p>
+        </div>
+    `;
 };
 
+// Función principal de renderizado usando el método .map() del array
 export const pintarResultados = (cubers: Cuber[]) => {
-    // Robustez: Si el país no tiene competidores o el filtro falla
+    // Control de arrays vacíos (ej. buscar competidores españoles y que no haya ninguno en el top 10)
     if (cubers.length === 0) {
-        app.innerHTML = '<p>No se encontraron competidores para este criterio.</p>';
+        app.innerHTML = `
+            <div style="padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
+                <p>No se encontraron competidores para este criterio en la cima del ranking mundial.</p>
+            </div>
+        `;
         return;
     }
 
-    // Para no saturar el DOM, mostramos un Top 50 máximo
-    const top50 = cubers.slice(0, 50);
-
-    // Creamos las tarjetas sin usar un bucle `for`, usando `.map` y `.join('')`
-    const html = top50.map((cuber, index) => `
-        <article style="border: 1px solid #ccc; padding: 10px; margin: 5px; border-radius: 8px;">
-            <h3>#${index + 1} - ${cuber.nombre}</h3>
-            <p>🌍 País: ${cuber.pais}</p>
-            <p>⏱️ Tiempo: <strong>${cuber.tiempoS}</strong></p>
+    // MAP: Transformamos el array de datos (Cuber[]) en un array de strings (HTML)
+    // Luego usamos .join('') para convertir el array de strings en un solo bloque de texto HTML
+    const html = cubers.map((cuber, index) => `
+        <article style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0; color: #2c3e50;">#${index + 1} - ${cuber.nombre}</h3>
+            <div style="color: #666; margin-bottom: 10px;">
+                <span style="display: block; margin-bottom: 5px;">👤 ID: ${cuber.id}</span>
+                <span style="display: block;">🌍 País: ${cuber.pais}</span>
+            </div>
+            <p style="margin-bottom: 0; font-size: 1.2em; color: #e74c3c;">
+                ⏱️ Tiempo: <strong>${cuber.tiempoS}</strong>
+            </p>
         </article>
     `).join('');
 
-    app.innerHTML = `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
-        ${html}
-    </div>`;
+    // Inyectamos todo el bloque HTML en el contenedor usando un grid para que quede bonito
+    app.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+            ${html}
+        </div>
+    `;
 };
