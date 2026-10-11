@@ -9,7 +9,7 @@ Misión M2 · Consumo de APIs y Asincronía — Web Development I.
 5. Selecciona un país en el menú desplegable y haz clic en "Analizar Récords". La aplicación consultará el Top 10 mundial de Cubo de Rubik (3x3), cruzará los datos para resolver las identidades y calculará el tiempo medio.
 
 ## Uso de IA
-Usé Gemini en la web como arquitecto de software y pareja de programación.
+Usé Gemini en la web como pareja de programación.
 Ejemplo de prompt real: "Crea una aplicación (con Vite) que consuma una API pública real usando fetch + async/await, módulos ES y métodos de array".
 Gemini me ayudó en la fase de investigación para descartar APIs que no cumplían los requisitos (como una que requería backend propio u otra con autenticación OAuth) hasta dar con la WCA API pública.
 Escribí a mano e iteré: La adaptación al límite de cuota del `LocalStorage` (QuotaExceededError), la extracción del diccionario de países ISO 3166-1 a un módulo independiente y la refactorización final de la interfaz a nodos puros del DOM.
