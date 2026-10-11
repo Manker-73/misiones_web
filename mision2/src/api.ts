@@ -2,7 +2,7 @@ export const fetchRanking = async (evento: string, tipo: string) => {
     const url = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/refs/heads/v1/rank/world/${tipo}/${evento}.json`;
     const cacheKey = `wca_${evento}_${tipo}`;
 
-    // BONUS: Comprobar Caché
+    //Comprobar Caché
     const datosCacheados = localStorage.getItem(cacheKey);
     if (datosCacheados) {
         console.log("⚡ Cargado desde LocalStorage instantáneamente");
@@ -13,7 +13,7 @@ export const fetchRanking = async (evento: string, tipo: string) => {
     console.log("🌐 Descargando desde la API...");
     const response = await fetch(url);
     
-    // Robustez: Controlar si la API se cae
+    // Controlar si la API se cae
     if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`);
     }
@@ -41,13 +41,13 @@ export const fetchCuberDetails = async (personId: string) => {
         
         const data = await response.json();
         
-        // OPTIMIZACIÓN: Creamos un objeto ligero solo con los datos vitales
+        //Creamos un objeto ligero solo con los datos vitales
         const dataLigera = {
             name: data.name,
             country: data.country
         };
         
-        // Guardamos la versión ligera (ocupa unos pocos bytes, nunca llenará la cuota)
+        // Guardamos la versión ligera
         localStorage.setItem(cacheKey, JSON.stringify(dataLigera));
         
         return dataLigera;
