@@ -25,3 +25,25 @@ export const fetchRanking = async (evento: string, tipo: string) => {
     
     return data;
 };
+
+export const fetchCuberDetails = async (personId: string) => {
+    const url = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/refs/heads/v1/persons/${personId}.json`;
+    const cacheKey = `wca_person_${personId}`;
+
+    const datosCacheados = localStorage.getItem(cacheKey);
+    if (datosCacheados) {
+        return JSON.parse(datosCacheados);
+    }
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) return null; // Si el competidor no existe o falla, devolvemos null
+        
+        const data = await response.json();
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+        return data;
+    } catch (error) {
+        console.error(`Error al buscar detalles de ${personId}:`, error);
+        return null;
+    }
+};

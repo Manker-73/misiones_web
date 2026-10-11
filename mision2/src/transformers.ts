@@ -7,11 +7,14 @@ export interface Cuber {
 }
 
 export const limpiarDatos = (datosCrudos: any): Cuber[] => {
-    // MAP: Transformamos el objeto gigante en lo que necesitamos
+    // 1. Imprimimos el primer competidor para ver sus verdaderos nombres de propiedad
+    console.log("👀 Estructura real de la API v1:", datosCrudos.items[0]);
+
+    // 2. Mapeamos usando alternativas con el operador || (OR)
     return datosCrudos.items.map((item: any) => ({
-        id: item.personId,
-        nombre: item.personName,
-        pais: item.country,
+        id: item.personId || item.id,
+        nombre: item.name || item.personName || "Nombre desconocido", // Probablemente ahora sea solo 'name'
+        pais: item.countryId || item.country || "País desconocido", // La WCA suele usar 'countryId'
         tiempoS: (item.best / 100).toFixed(2) + "s",
         tiempoMs: item.best
     }));
