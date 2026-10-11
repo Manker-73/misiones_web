@@ -13,12 +13,12 @@ btnCargar.addEventListener('click', async () => {
         // 1. Traer el ranking mundial (solo IDs y tiempos)
         const rankingCrudo = await fetchRanking('333', 'single');
         
-        // 2. Extraer solo el Top 10 para no saturar la API
-        const top10Crudo = rankingCrudo.items.slice(0, 10);
+        // 2. Extraer el top 50
+        const top50Crudo = rankingCrudo.items.slice(0, 50);
         
         // 3. Cruzar datos asíncronamente (Camino B: Promise.all)
         // Por cada competidor, hacemos una petición simultánea para descubrir su identidad
-        const datosConNombresPromises = top10Crudo.map(async (item: any) => {
+        const datosConNombresPromises = top50Crudo.map(async (item: any) => {
             const detalles = await fetchCuberDetails(item.personId);
             return {
                 id: item.personId,
