@@ -1,24 +1,24 @@
-// Importamos solo el tipo para evitar el SyntaxError que tuvimos antes
+// Importamos solo el tipo
 import type { Cuber } from './transformers'; 
 
 // Capturamos el contenedor principal donde inyectaremos todo
 const app = document.getElementById('app') as HTMLDivElement;
 
-// Función para dar feedback visual al usuario (Robustez - 10 pts)
+// Función para dar feedback visual al usuario
 export const mostrarLoader = () => {
     app.innerHTML = `
         <div style="text-align: center; padding: 2rem;">
-            <h2>⏳ Analizando base de datos de la WCA...</h2>
-            <p>Resolviendo identidades de los competidores. Esto puede tardar unos segundos.</p>
+            <h2>Analizando base de datos de la WCA...</h2>
+            <p>Comprobando identidades de los competidores. Esto puede tardar unos segundos.</p>
         </div>
     `;
 };
 
-// Función para manejar fallos de red amigablemente (Robustez - 10 pts)
+// Función para manejar fallos de red
 export const mostrarError = (mensaje: string) => {
     app.innerHTML = `
         <div style="background-color: #ffebee; color: #c62828; padding: 1rem; border-radius: 8px;">
-            <h3>❌ Ha ocurrido un problema</h3>
+            <h3>Ha ocurrido un problema</h3>
             <p>${mensaje}</p>
         </div>
     `;
@@ -26,7 +26,7 @@ export const mostrarError = (mensaje: string) => {
 
 // Función principal de renderizado usando el método .map() del array
 export const pintarResultados = (cubers: Cuber[]) => {
-    // Control de arrays vacíos (ej. buscar competidores españoles y que no haya ninguno en el top 10)
+    // Control de arrays vacíos
     if (cubers.length === 0) {
         app.innerHTML = `
             <div style="padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
@@ -51,7 +51,7 @@ export const pintarResultados = (cubers: Cuber[]) => {
         </article>
     `).join('');
 
-    // Inyectamos todo el bloque HTML en el contenedor usando un grid para que quede bonito
+    // Inyectamos todo el bloque HTML en el contenedor usando un grid
     app.innerHTML = `
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
             ${html}
