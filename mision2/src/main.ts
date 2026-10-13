@@ -5,8 +5,8 @@ import { mostrarLoader, pintarResultados, mostrarError, inicializarSelectPaises,
 
 const btnCargar = document.getElementById('btn-cargar') as HTMLButtonElement;
 const selectPais = document.getElementById('select-pais') as HTMLSelectElement;
+const inputTop = document.getElementById('input-top') as HTMLInputElement;
 
-// Inicializamos el selector de forma dinámica al cargar la página
 inicializarSelectPaises(selectPais);
 
 btnCargar.addEventListener('click', async () => {
@@ -16,23 +16,30 @@ btnCargar.addEventListener('click', async () => {
         
         const rankingCrudo = await fetchRanking('333', 'single');
         
-        // Ampliamos el rango a 150 para que el filtro de países tenga un volumen real de datos
-        const topCrudo: RankingItem[] = rankingCrudo.items.slice(0, 150);
+        const topCrudo: RankingItem[] = rankingCrudo.items.slice(0, 1000);
         
         const datosPromises = topCrudo.map(async (item) => {
             const detalles = await fetchCuberDetails(item.personId);
-            return construirCuber(item, detalles); // Transformación encapsulada
+            return construirCuber(item, detalles);
         });
 
         const datosCompletos = await Promise.all(datosPromises);
         
-        // Filtramos TODO el grupo, y luego nos quedamos con el Top 50 del país seleccionado
+        // 2. Aplicamos el filtro por país
         const pais = selectPais.value;
-        const datosFiltrados = filtrarPorPais(datosCompletos, pais).slice(0, 50);
-        
-        const mediaEstadistica = calcularMediaTop(datosFiltrados); // Función pura real
+        const datosFiltradosPorPais = filtrarPorPais(datosCompletos, pais);
 
-        pintarResultados(datosFiltrados, mediaEstadistica);
+        // 3. Leemos cuánto quiere ver el usuario y aplicamos el recorte final
+        const limiteVisual = parseInt(inputTop.value, 10) || 50;
+        
+        // Aplicamos el slice final usando el límite del usuario
+        const datosFinales = datosFiltradosPorPais.slice(0, limiteVisual);
+        
+        // 4. Calculamos la media SÓLO de los que vamos a mostrar
+        const mediaEstadistica = calcularMediaTop(datosFinales); 
+
+        // 5. Pintamos los resultados
+        pintarResultados(datosFinales, mediaEstadistica, pais);
 
     } catch (error) {
         console.error("Fallo crítico:", error);
