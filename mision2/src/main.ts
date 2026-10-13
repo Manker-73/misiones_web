@@ -1,49 +1,43 @@
 import './style.css';
 import { fetchRanking, fetchCuberDetails } from './api';
-import { filtrarPorPais, calcularMediaTop } from './transformers';
-import { mostrarLoader, pintarResultados, mostrarError } from './ui';
+import { construirCuber, filtrarPorPais, calcularMediaTop, type RankingItem } from './transformers';
+import { mostrarLoader, pintarResultados, mostrarError, inicializarSelectPaises, toggleBoton } from './ui';
 
 const btnCargar = document.getElementById('btn-cargar') as HTMLButtonElement;
 const selectPais = document.getElementById('select-pais') as HTMLSelectElement;
 
+// Inicializamos el selector de forma dinámica al cargar la página
+inicializarSelectPaises(selectPais);
+
 btnCargar.addEventListener('click', async () => {
     try {
+        toggleBoton(btnCargar, true);
         mostrarLoader();
         
-        // 1. Traer el ranking mundial (solo IDs y tiempos)
         const rankingCrudo = await fetchRanking('333', 'single');
         
-        // 2. Extraer el top 50
-        const top50Crudo = rankingCrudo.items.slice(0, 50);
+        // Ampliamos el rango a 150 para que el filtro de países tenga un volumen real de datos
+        const topCrudo: RankingItem[] = rankingCrudo.items.slice(0, 150);
         
-        // 3. Cruzar datos asíncronamente
-        // Por cada competidor, hacemos una petición simultánea para descubrir su identidad
-        const datosConNombresPromises = top50Crudo.map(async (item: any) => {
+        const datosPromises = topCrudo.map(async (item) => {
             const detalles = await fetchCuberDetails(item.personId);
-            return {
-                id: item.personId,
-                nombre: detalles ? detalles.name : "Nombre desconocido",
-                pais: detalles ? detalles.country : "País desconocido",
-                tiempoS: (item.best / 100).toFixed(2) + "s",
-                tiempoMs: item.best
-            };
+            return construirCuber(item, detalles); // Transformación encapsulada
         });
 
-        // Esperamos a que se resuelvan las peticiones
-        const datosCompletos = await Promise.all(datosConNombresPromises);
+        const datosCompletos = await Promise.all(datosPromises);
         
-        // 4. Ejecutar transformaciones puras
+        // Filtramos TODO el grupo, y luego nos quedamos con el Top 50 del país seleccionado
         const pais = selectPais.value;
-        const datosFiltrados = filtrarPorPais(datosCompletos, pais);
+        const datosFiltrados = filtrarPorPais(datosCompletos, pais).slice(0, 50);
         
-        // 5. Análisis matemático (reduce)
-        calcularMediaTop(datosFiltrados);
+        const mediaEstadistica = calcularMediaTop(datosFiltrados); // Función pura real
 
-        // 6. Inyectar en el DOM
-        pintarResultados(datosFiltrados);
+        pintarResultados(datosFiltrados, mediaEstadistica);
 
     } catch (error) {
-        console.error("Fallo en la orquestación:", error);
-        mostrarError("Hubo un problema crítico al contactar con la API de la WCA.");
+        console.error("Fallo crítico:", error);
+        mostrarError("Hubo un problema al contactar con la API.");
+    } finally {
+        toggleBoton(btnCargar, false);
     }
 });
