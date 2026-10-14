@@ -69,7 +69,7 @@ export const mostrarError = (mensaje: string): void => {
 const construirPanelEstadisticas = (resultado: ResultadoProcesamiento): HTMLElement => {
     const { estadisticas, etiquetaPais, perfilesFallidos } = resultado;
     const panel = crearElemento('section', ['stats-panel']);
-    const titulo = crearElemento('h3', ['stats-title'], `📊 Análisis(${etiquetaPais})`);
+    const titulo = crearElemento('h3', ['stats-title'], `📊 Análisis (${etiquetaPais})`);
 
     const listaMetricas = crearElemento('div', ['stats-metrics']);
 

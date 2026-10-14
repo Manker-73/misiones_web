@@ -110,10 +110,10 @@ export const fetchCuberDetails = async (personId: string): Promise<PersonDetails
     }
 };
 
-// Concurrencia controlada en lotes de 25 peticiones sin usar bucles 'for'
+// Concurrencia controlada en lotes de 50 peticiones 
 export const fetchDetallesEnLotes = async (
     items: RankingItem[],
-    tamanoLote: number = 25,
+    tamanoLote: number = 50,
     onProgress?: (completados: number, total: number) => void
 ): Promise<ResultadoLotes> => {
     const detallesPorId: Record<string, PersonDetails> = {};

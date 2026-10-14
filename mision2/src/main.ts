@@ -1,3 +1,4 @@
+// src/main.ts
 import './style.css';
 import { fetchRanking, fetchDetallesEnLotes } from './api';
 import {
@@ -18,11 +19,13 @@ const selectPais = document.getElementById('select-pais') as HTMLSelectElement;
 const inputTop = document.getElementById('input-top') as HTMLInputElement;
 
 const MUESTRA_MAXIMA_RANKING = 1000;
+const TAMANO_LOTE = 50;
 
 // Poblamos el selector de países sin acoplar ui.ts al diccionario
 inicializarSelectPaises(selectPais, obtenerOpcionesPaises());
 
-btnCargar.addEventListener('click', async () => {
+// Función de orquestación reutilizable
+const ejecutarAnalisisRanking = async (): Promise<void> => {
     try {
         const limiteValidado = acotarLimite(inputTop.value, 1, MUESTRA_MAXIMA_RANKING);
         inputTop.value = String(limiteValidado);
@@ -31,11 +34,16 @@ btnCargar.addEventListener('click', async () => {
         mostrarLoader();
 
         const rankingCrudo = await fetchRanking('333', 'single');
-        const muestraRanking = rankingCrudo.items.slice(0, MUESTRA_MAXIMA_RANKING);
+
+        // Si el filtro es global ('All'), solo descargamos los perfiles que el usuario pidió ver.
+        // Si filtra por un país concreto, inspeccionamos hasta los 1000 del ranking mundial.
+        const cantidadNecesaria =
+            selectPais.value === 'All' ? limiteValidado : MUESTRA_MAXIMA_RANKING;
+        const muestraRanking = rankingCrudo.items.slice(0, cantidadNecesaria);
 
         const { detallesPorId, fallidos } = await fetchDetallesEnLotes(
             muestraRanking,
-            50,
+            TAMANO_LOTE,
             (completados, total) => mostrarLoader(completados, total)
         );
 
@@ -58,4 +66,6 @@ btnCargar.addEventListener('click', async () => {
     } finally {
         toggleBoton(btnCargar, false);
     }
-});
+};
+
+btnCargar.addEventListener('click', ejecutarAnalisisRanking);
