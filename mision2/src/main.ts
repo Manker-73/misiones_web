@@ -1,49 +1,60 @@
 import './style.css';
-import { fetchRanking, fetchCuberDetails } from './api';
-import { construirCuber, filtrarPorPais, calcularMediaTop, type RankingItem } from './transformers';
-import { mostrarLoader, pintarResultados, mostrarError, inicializarSelectPaises, toggleBoton } from './ui';
+import { fetchRanking, fetchDetallesEnLotes } from './api';
+import {
+    obtenerOpcionesPaises,
+    procesarRankingCompleto,
+    acotarLimite
+} from './transformers';
+import {
+    mostrarLoader,
+    pintarResultados,
+    mostrarError,
+    inicializarSelectPaises,
+    toggleBoton
+} from './ui';
 
 const btnCargar = document.getElementById('btn-cargar') as HTMLButtonElement;
 const selectPais = document.getElementById('select-pais') as HTMLSelectElement;
 const inputTop = document.getElementById('input-top') as HTMLInputElement;
 
-inicializarSelectPaises(selectPais);
+const MUESTRA_MAXIMA_RANKING = 1000;
+
+// Poblamos el selector de países sin acoplar ui.ts al diccionario
+inicializarSelectPaises(selectPais, obtenerOpcionesPaises());
 
 btnCargar.addEventListener('click', async () => {
     try {
+        const limiteValidado = acotarLimite(inputTop.value, 1, MUESTRA_MAXIMA_RANKING);
+        inputTop.value = String(limiteValidado);
+
         toggleBoton(btnCargar, true);
         mostrarLoader();
-        
+
         const rankingCrudo = await fetchRanking('333', 'single');
-        
-        const topCrudo: RankingItem[] = rankingCrudo.items.slice(0, 1000);
-        
-        const datosPromises = topCrudo.map(async (item) => {
-            const detalles = await fetchCuberDetails(item.personId);
-            return construirCuber(item, detalles);
-        });
+        const muestraRanking = rankingCrudo.items.slice(0, MUESTRA_MAXIMA_RANKING);
 
-        const datosCompletos = await Promise.all(datosPromises);
-        
-        // 2. Aplicamos el filtro por país
-        const pais = selectPais.value;
-        const datosFiltradosPorPais = filtrarPorPais(datosCompletos, pais);
+        const { detallesPorId, fallidos } = await fetchDetallesEnLotes(
+            muestraRanking,
+            50,
+            (completados, total) => mostrarLoader(completados, total)
+        );
 
-        // 3. Leemos cuánto quiere ver el usuario y aplicamos el recorte final
-        const limiteVisual = parseInt(inputTop.value, 10) || 50;
-        
-        // Aplicamos el slice final usando el límite del usuario
-        const datosFinales = datosFiltradosPorPais.slice(0, limiteVisual);
-        
-        // 4. Calculamos la media SÓLO de los que vamos a mostrar
-        const mediaEstadistica = calcularMediaTop(datosFinales); 
+        const resultado = procesarRankingCompleto(
+            muestraRanking,
+            detallesPorId,
+            selectPais.value,
+            inputTop.value,
+            fallidos
+        );
 
-        // 5. Pintamos los resultados
-        pintarResultados(datosFinales, mediaEstadistica, pais);
-
+        pintarResultados(resultado);
     } catch (error) {
-        console.error("Fallo crítico:", error);
-        mostrarError("Hubo un problema al contactar con la API.");
+        console.error('Fallo en la orquestación:', error);
+        const mensaje =
+            error instanceof Error
+                ? error.message
+                : 'Error inesperado al procesar los datos de la WCA.';
+        mostrarError(mensaje);
     } finally {
         toggleBoton(btnCargar, false);
     }

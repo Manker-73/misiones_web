@@ -1,92 +1,151 @@
-import type { Cuber } from './transformers';
-import { nombresPaises } from './paises';
+// src/ui.ts
+import type { Cuber, OpcionPais, ResultadoProcesamiento } from './transformers';
 
-const app = document.getElementById('app') as HTMLDivElement;
+const obtenerContenedorApp = (): HTMLDivElement => {
+    const contenedor = document.getElementById('app') as HTMLDivElement | null;
+    if (!contenedor) {
+        throw new Error('No se encontró el contenedor #app en el documento.');
+    }
+    return contenedor;
+};
 
-// --- HELPERS PARA MANEJO DEL DOM ---
-const crearElemento = (etiqueta: string, clases: string[] = [], texto: string = ''): HTMLElement => {
+const crearElemento = <K extends keyof HTMLElementTagNameMap>(
+    etiqueta: K,
+    clases: string[] = [],
+    texto: string = ''
+): HTMLElementTagNameMap[K] => {
     const el = document.createElement(etiqueta);
     if (clases.length > 0) el.classList.add(...clases);
     if (texto) el.textContent = texto;
     return el;
 };
 
-// --- ESTADOS DE LA INTERFAZ ---
-export const toggleBoton = (boton: HTMLButtonElement, estaCargando: boolean) => {
+export const toggleBoton = (boton: HTMLButtonElement, estaCargando: boolean): void => {
     boton.disabled = estaCargando;
     boton.textContent = estaCargando ? '⏳ Analizando...' : 'Analizar Récords';
-    boton.style.opacity = estaCargando ? '0.5' : '1';
+    boton.classList.toggle('btn-deshabilitado', estaCargando);
 };
 
-export const inicializarSelectPaises = (select: HTMLSelectElement) => {
-    select.innerHTML = '<option value="All">🌍 Todo el mundo</option>';
-    Object.entries(nombresPaises).forEach(([codigo, nombre]) => {
-        select.appendChild(crearElemento('option', [], nombre)).setAttribute('value', codigo);
+export const inicializarSelectPaises = (
+    select: HTMLSelectElement,
+    opciones: OpcionPais[]
+): void => {
+    const opcionGlobal = crearElemento('option', [], '🌍 Todo el mundo');
+    opcionGlobal.value = 'All';
+
+    const elementosOpcion = opciones.map(({ codigo, nombre }) => {
+        const option = crearElemento('option', [], nombre);
+        option.value = codigo;
+        return option;
     });
+
+    select.replaceChildren(opcionGlobal, ...elementosOpcion);
 };
 
-export const mostrarLoader = () => {
-    while (app.firstChild) app.removeChild(app.firstChild);
+export const mostrarLoader = (completados: number = 0, total: number = 0): void => {
+    const app = obtenerContenedorApp();
     const contenedor = crearElemento('div', ['mensaje-estado']);
-    contenedor.append(
-        crearElemento('h2', [], '⏳ Analizando base de datos de la WCA...'),
-        crearElemento('p', [], 'Resolviendo identidades de los competidores. Esto puede tardar unos segundos.')
-    );
-    app.appendChild(contenedor);
+    const titulo = crearElemento('h2', [], '⏳ Analizando base de datos de la WCA...');
+    const textoProgreso =
+        total > 0
+            ? `Resolviendo identidades en lotes seguros: ${completados} de ${total} perfiles procesados.`
+            : 'Conectando con el repositorio de rankings mundiales...';
+    const subtitulo = crearElemento('p', ['progreso-texto'], textoProgreso);
+
+    contenedor.append(titulo, subtitulo);
+    app.replaceChildren(contenedor);
 };
 
-export const mostrarError = (mensaje: string) => {
-    while (app.firstChild) app.removeChild(app.firstChild);
+export const mostrarError = (mensaje: string): void => {
+    const app = obtenerContenedorApp();
     const contenedor = crearElemento('div', ['mensaje-error']);
     contenedor.append(
         crearElemento('h3', [], '❌ Ha ocurrido un problema'),
         crearElemento('p', [], mensaje)
     );
-    app.appendChild(contenedor);
+    app.replaceChildren(contenedor);
 };
 
-// --- RENDERIZADO PRINCIPAL ---
-export const pintarResultados = (cubers: Cuber[], media: string | null, codigoPais: string) => {
-    // 1. Limpiamos el contenedor visual
-    while (app.firstChild) app.removeChild(app.firstChild);
+const construirPanelEstadisticas = (resultado: ResultadoProcesamiento): HTMLElement => {
+    const { estadisticas, etiquetaPais, perfilesFallidos } = resultado;
+    const panel = crearElemento('section', ['stats-panel']);
+    const titulo = crearElemento('h3', ['stats-title'], `📊 Análisis(${etiquetaPais})`);
 
-    // 2. Control si el array está vacío tras filtrar
+    const listaMetricas = crearElemento('div', ['stats-metrics']);
+
+    if (estadisticas) {
+        const items: Array<[string, string]> = [
+            ['Tiempo medio:', `${estadisticas.mediaS}s`],
+            ['Mejor registro:', `${estadisticas.mejorS}s`],
+            ['Peor registro:', `${estadisticas.peorS}s`],
+            ['País dominante:', estadisticas.paisDominante]
+        ];
+
+        const nodosMetrica = items.map(([etiqueta, valor]) => {
+            const p = crearElemento('p', ['stats-item'], `${etiqueta} `);
+            const strong = crearElemento('strong', [], valor);
+            p.appendChild(strong);
+            return p;
+        });
+
+        listaMetricas.append(...nodosMetrica);
+    }
+
+    panel.append(titulo, listaMetricas);
+
+    if (perfilesFallidos > 0) {
+        const aviso = crearElemento(
+            'p',
+            ['stats-warning'],
+            `⚠️ Se omitieron ${perfilesFallidos} perfiles que no respondieron a tiempo.`
+        );
+        panel.appendChild(aviso);
+    }
+
+    return panel;
+};
+
+const construirTarjetaCuber = (cuber: Cuber, index: number): HTMLElement => {
+    const article = crearElemento('article', ['cuber-card']);
+    const titulo = crearElemento('h3', ['cuber-title'], `#${index + 1} - ${cuber.nombre}`);
+
+    const divInfo = crearElemento('div', ['cuber-info']);
+    const idSpan = crearElemento('span', [], `👤 ID: ${cuber.id}`);
+    const paisSpan = crearElemento('span', [], `🌍 País: ${cuber.nombrePais}`);
+    divInfo.append(idSpan, paisSpan);
+
+    const tiempoP = crearElemento('p', ['cuber-time'], '⏱️ Tiempo: ');
+    const tiempoStrong = crearElemento('strong', [], cuber.tiempoS);
+    tiempoP.appendChild(tiempoStrong);
+
+    article.append(titulo, divInfo, tiempoP);
+    return article;
+};
+
+export const pintarResultados = (resultado: ResultadoProcesamiento): void => {
+    const app = obtenerContenedorApp();
+    const { cubers, estadisticas } = resultado;
+
     if (cubers.length === 0) {
-        app.appendChild(crearElemento('p', ['mensaje-estado'], 'No hay resultados para este filtro.'));
+        const vacio = crearElemento(
+            'div',
+            ['mensaje-estado'],
+            'No se encontraron competidores para este país dentro del rango analizado.'
+        );
+        app.replaceChildren(vacio);
         return;
     }
 
-    // 3. Inyectar el panel de estadísticas (Ahora personalizado por país)
-    if (media) {
-        // Lógica de traducción para el título del panel
-        const nombrePais = codigoPais === 'All' ? 'todo el mundo' : (nombresPaises[codigoPais] || codigoPais);
+    const fragmentos: HTMLElement[] = [];
 
-        const statsPanel = crearElemento('div', ['stats-panel']);
-        statsPanel.innerHTML = `<h3>📊 Análisis</h3><p>Tiempo medio de ${nombrePais}: <strong>${media}s</strong></p>`;
-        statsPanel.style.cssText = 'background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #1565c0;';
-        app.appendChild(statsPanel);
+    if (estadisticas) {
+        fragmentos.push(construirPanelEstadisticas(resultado));
     }
 
-    // 4. Crear la cuadrícula y las tarjetas
     const gridContainer = crearElemento('div', ['cuber-grid']);
-    const tarjetasDOM = cubers.map((cuber, index) => {
-        const article = crearElemento('article', ['cuber-card']);
-        const nombrePais = nombresPaises[cuber.pais] || cuber.pais;
-        
-        article.innerHTML = `
-            <h3 style="margin-top: 0;">#${index + 1} - ${cuber.nombre}</h3>
-            <div style="color: #666; margin-bottom: 10px;">
-                <span style="display: block; margin-bottom: 5px;">👤 ID: ${cuber.id}</span>
-                <span style="display: block;">🌍 País: ${nombrePais}</span>
-            </div>
-            <p style="margin-bottom: 0; font-size: 1.2em; color: #e74c3c;">
-                ⏱️ Tiempo: <strong>${cuber.tiempoS}</strong>
-            </p>
-        `;
-        return article;
-    });
-
-    // 5. Ensamblar todo en el DOM
+    const tarjetasDOM = cubers.map((cuber, index) => construirTarjetaCuber(cuber, index));
     gridContainer.append(...tarjetasDOM);
-    app.appendChild(gridContainer);
+    fragmentos.push(gridContainer);
+
+    app.replaceChildren(...fragmentos);
 };

@@ -1,4 +1,3 @@
-/* src/style.css */
 body {
     font-family: system-ui, -apple-system, sans-serif;
     background-color: #f4f7f6;
@@ -13,7 +12,55 @@ header {
     border-bottom: 2px solid #ddd;
 }
 
-/* Clases usadas en ui.ts */
+.controles-panel {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.input-top-number {
+    width: 75px;
+    padding: 4px 8px;
+}
+
+.btn-deshabilitado {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.stats-panel {
+    background: #e3f2fd;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: #0d47a1;
+    border: 1px solid #bbdefb;
+}
+
+.stats-title {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.stats-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.stats-item {
+    margin: 0;
+}
+
+.stats-warning {
+    margin-top: 10px;
+    margin-bottom: 0;
+    color: #b71c1c;
+    font-size: 0.9em;
+}
+
 .cuber-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -26,16 +73,16 @@ header {
     border: 1px solid #dee2e6;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s;
 }
 
 .cuber-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.cuber-card h3 {
+.cuber-title {
     margin-top: 0;
     color: #2c3e50;
 }
@@ -59,6 +106,11 @@ header {
     padding: 2rem;
     background: white;
     border-radius: 8px;
+}
+
+.progreso-texto {
+    color: #555;
+    font-weight: 500;
 }
 
 .mensaje-error {
