@@ -47,7 +47,7 @@ export const inicializarSelectPaises = (
     opciones: OpcionPais[],
     seleccionPrevia: string = 'All'
 ): void => {
-    const opcionGlobal = crearElemento('option', [], '🌍 Todo el mundo');
+    const opcionGlobal = crearElemento('option', [], 'Todo el mundo 🌍');
     opcionGlobal.value = 'All';
 
     const elementosOpcion = opciones.map(({ codigo, nombre }) => {
