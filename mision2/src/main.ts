@@ -1,58 +1,79 @@
-// src/main.ts
 import './style.css';
 import { fetchRanking, fetchDetallesEnLotes } from './api';
 import {
+    obtenerOpcionesEventos,
     obtenerOpcionesPaises,
     procesarRankingCompleto,
-    acotarLimite
+    acotarLimite,
+    validarEventoWCA
 } from './transformers';
+import {
+    LIMITE_MAXIMO_RANKING,
+    LIMITE_MINIMO_RANKING,
+    TAMANO_LOTE_PETICIONES,
+    type TipoRanking
+} from './types';
 import {
     mostrarLoader,
     pintarResultados,
     mostrarError,
+    inicializarSelectEventos,
     inicializarSelectPaises,
     toggleBoton
 } from './ui';
 
 const btnCargar = document.getElementById('btn-cargar') as HTMLButtonElement;
+const selectEvento = document.getElementById('select-evento') as HTMLSelectElement;
+const selectTipo = document.getElementById('select-tipo') as HTMLSelectElement;
 const selectPais = document.getElementById('select-pais') as HTMLSelectElement;
 const inputTop = document.getElementById('input-top') as HTMLInputElement;
 
-const MUESTRA_MAXIMA_RANKING = 1000;
-const TAMANO_LOTE = 50;
-
-// Poblamos el selector de países sin acoplar ui.ts al diccionario
+// Inicializamos los selectores dinámicos al arrancar
+inicializarSelectEventos(selectEvento, obtenerOpcionesEventos());
 inicializarSelectPaises(selectPais, obtenerOpcionesPaises());
 
-// Función de orquestación reutilizable
 const ejecutarAnalisisRanking = async (): Promise<void> => {
     try {
-        const limiteValidado = acotarLimite(inputTop.value, 1, MUESTRA_MAXIMA_RANKING);
+        const limiteValidado = acotarLimite(
+            inputTop.value,
+            LIMITE_MINIMO_RANKING,
+            LIMITE_MAXIMO_RANKING
+        );
         inputTop.value = String(limiteValidado);
+
+        const eventoSeleccionado = validarEventoWCA(selectEvento.value);
+        const tipoSeleccionado: TipoRanking =
+            selectTipo.value === 'average' ? 'average' : 'single';
+        const paisSeleccionado = selectPais.value;
 
         toggleBoton(btnCargar, true);
         mostrarLoader();
 
-        const rankingCrudo = await fetchRanking('333', 'single');
+        const rankingCrudo = await fetchRanking(eventoSeleccionado, tipoSeleccionado);
 
-        // Si el filtro es global ('All'), solo descargamos los perfiles que el usuario pidió ver.
-        // Si filtra por un país concreto, inspeccionamos hasta los 1000 del ranking mundial.
         const cantidadNecesaria =
-            selectPais.value === 'All' ? limiteValidado : MUESTRA_MAXIMA_RANKING;
+            paisSeleccionado === 'All' ? limiteValidado : LIMITE_MAXIMO_RANKING;
         const muestraRanking = rankingCrudo.items.slice(0, cantidadNecesaria);
 
-        const { detallesPorId, fallidos } = await fetchDetallesEnLotes(
+        const resultadoLotes = await fetchDetallesEnLotes(
             muestraRanking,
-            TAMANO_LOTE,
+            TAMANO_LOTE_PETICIONES,
             (completados, total) => mostrarLoader(completados, total)
         );
 
         const resultado = procesarRankingCompleto(
             muestraRanking,
-            detallesPorId,
-            selectPais.value,
+            resultadoLotes,
+            paisSeleccionado,
             inputTop.value,
-            fallidos
+            eventoSeleccionado,
+            tipoSeleccionado
+        );
+
+        inicializarSelectPaises(
+            selectPais,
+            resultado.opcionesPaisesActualizadas,
+            paisSeleccionado
         );
 
         pintarResultados(resultado);

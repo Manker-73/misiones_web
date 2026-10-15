@@ -11,6 +11,14 @@ export const limpiarCachePropia = (): void => {
         .forEach((clave) => localStorage.removeItem(clave));
 };
 
+export const eliminarDeCache = (clave: string): void => {
+    try {
+        localStorage.removeItem(clave);
+    } catch {
+        // Ignoramos si el almacenamiento está bloqueado
+    }
+};
+
 export const guardarEnCache = <T>(clave: string, datos: T): void => {
     const payload: CacheEntry<T> = { datos, timestamp: Date.now() };
     try {
@@ -34,18 +42,18 @@ export const leerDeCache = <T>(clave: string, maxEdadMs: number = 86400000): T |
 
         const parseado = JSON.parse(item) as Partial<CacheEntry<T>>;
         if (typeof parseado.timestamp !== 'number' || parseado.datos === undefined) {
-            localStorage.removeItem(clave);
+            eliminarDeCache(clave);
             return null;
         }
 
         if (Date.now() - parseado.timestamp > maxEdadMs) {
-            localStorage.removeItem(clave);
+            eliminarDeCache(clave);
             return null;
         }
 
         return parseado.datos;
     } catch {
-        localStorage.removeItem(clave);
+        eliminarDeCache(clave);
         return null;
     }
 };

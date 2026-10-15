@@ -3,20 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WCA Speedcubing Analyzer</title>
+  <title>WCA Speedcubing Multi-Event Analyzer</title>
 </head>
 <body>
   <header>
-    <h1>WCA Top Analizador (3x3)</h1>
+    <h1>WCA Speedcubing Analyzer</h1>
+    <p class="header-subtitle">Explorador oficial multi-categoría de récords mundiales y métricas por país</p>
   </header>
 
   <section class="controles-panel">
-    <div>
+    <div class="control-group">
+      <label for="select-evento"><strong>Categoría:</strong></label>
+      <select id="select-evento"></select>
+    </div>
+
+    <div class="control-group">
+      <label for="select-tipo"><strong>Modalidad:</strong></label>
+      <select id="select-tipo">
+        <option value="single">⚡ Single (Mejor resolución)</option>
+        <option value="average">📊 Average (Media oficial)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
       <label for="select-pais"><strong>Filtrar por País:</strong></label>
       <select id="select-pais"></select>
     </div>
 
-    <div>
+    <div class="control-group">
       <label for="input-top"><strong>Mostrar Top:</strong></label>
       <input type="number" id="input-top" value="50" min="1" max="1000" class="input-top-number" />
     </div>
@@ -25,7 +39,9 @@
   </section>
 
   <main id="app">
-    <p>Haz clic en el botón para cargar los datos de la WCA.</p>
+    <div class="mensaje-estado">
+      <p>Selecciona la categoría, la modalidad y el país, y haz clic en <strong>Analizar Récords</strong>.</p>
+    </div>
   </main>
 
   <script type="module" src="/src/main.ts"></script>

@@ -1,55 +1,88 @@
-// src/transformers.ts
-import type { PersonDetails, RankingItem } from './api';
 import { nombresPaises } from './paises';
+import {
+    EVENTOS_WCA,
+    LIMITE_DEFECTO_RANKING,
+    LIMITE_MAXIMO_RANKING,
+    LIMITE_MINIMO_RANKING,
+    type CodigoEventoWCA,
+    type Cuber,
+    type EstadisticasGrupo,
+    type OpcionEventoWCA,
+    type OpcionPais,
+    type PersonDetails,
+    type RankingItem,
+    type ResultadoLotes,
+    type ResultadoProcesamiento,
+    type TipoRanking
+} from './types';
 
-export interface Cuber {
-    id: string;
-    nombre: string;
-    codigoPais: string;
-    nombrePais: string;
-    tiempoS: string;
-    tiempoMs: number;
-}
+export const obtenerOpcionesEventos = (): readonly OpcionEventoWCA[] => EVENTOS_WCA;
 
-export interface EstadisticasGrupo {
-    mediaS: string;
-    mejorS: string;
-    peorS: string;
-    paisDominante: string;
-    totalPaisesDistintos: number;
-}
+export const validarEventoWCA = (valor: string): CodigoEventoWCA => {
+    const encontrado = EVENTOS_WCA.find((ev) => ev.codigo === valor);
+    return encontrado ? encontrado.codigo : '333';
+};
 
-export interface OpcionPais {
-    codigo: string;
-    nombre: string;
-}
+export const obtenerNombreEvento = (codigo: CodigoEventoWCA): string => {
+    const encontrado = EVENTOS_WCA.find((ev) => ev.codigo === codigo);
+    return encontrado ? encontrado.nombre : codigo;
+};
 
-export interface ResultadoProcesamiento {
-    cubers: Cuber[];
-    estadisticas: EstadisticasGrupo | null;
-    etiquetaPais: string;
-    perfilesFallidos: number;
-}
+// Formatea centésimas de segundo al estándar WCA (ej. 313 -> "3.13s", 6956 -> "1:09.56")
+export const formatearTiempoWCA = (centesimas: number): string => {
+    const totalSegundos = centesimas / 100;
+    if (totalSegundos < 60) {
+        return `${totalSegundos.toFixed(2)}s`;
+    }
+    const minutos = Math.floor(totalSegundos / 60);
+    const segundosRestantes = (totalSegundos % 60).toFixed(2).padStart(5, '0');
+    return `${minutos}:${segundosRestantes}`;
+};
 
-export const obtenerOpcionesPaises = (): OpcionPais[] =>
-    Object.entries(nombresPaises)
+export const codigoABandera = (codigoIso: string): string => {
+    const limpio = codigoIso.trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(limpio)) return '🏳️';
+    const puntos = Array.from(limpio).map((letra) => 127397 + letra.charCodeAt(0));
+    return String.fromCodePoint(...puntos);
+};
+
+export const obtenerOpcionesPaises = (codigosExtra: string[] = []): OpcionPais[] => {
+    const mapaCombinado: Record<string, string> = { ...nombresPaises };
+
+    codigosExtra.forEach((codigo) => {
+        const codigoNormalizado = codigo.trim().toUpperCase();
+        if (codigoNormalizado && !mapaCombinado[codigoNormalizado]) {
+            mapaCombinado[codigoNormalizado] = `País (${codigoNormalizado})`;
+        }
+    });
+
+    return Object.entries(mapaCombinado)
         .map(([codigo, nombre]) => ({ codigo, nombre }))
         .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+};
 
-export const acotarLimite = (valorRaw: string, min: number = 1, max: number = 1000  ): number => {
+export const acotarLimite = (
+    valorRaw: string,
+    min: number = LIMITE_MINIMO_RANKING,
+    max: number = LIMITE_MAXIMO_RANKING
+): number => {
     const parseado = Number.parseInt(valorRaw, 10);
-    if (Number.isNaN(parseado)) return 50;
+    if (Number.isNaN(parseado)) return LIMITE_DEFECTO_RANKING;
     return Math.min(Math.max(parseado, min), max);
 };
 
-export const construirCuber = (item: RankingItem, detalle: PersonDetails): Cuber => ({
-    id: item.personId,
-    nombre: detalle.name,
-    codigoPais: detalle.country,
-    nombrePais: nombresPaises[detalle.country] || detalle.country,
-    tiempoS: `${(item.best / 100).toFixed(2)}s`,
-    tiempoMs: item.best
-});
+export const construirCuber = (item: RankingItem, detalle: PersonDetails): Cuber => {
+    const codigo = detalle.country.trim().toUpperCase();
+    return {
+        id: item.personId,
+        nombre: detalle.name,
+        codigoPais: codigo,
+        nombrePais: nombresPaises[codigo] || `País (${codigo})`,
+        bandera: codigoABandera(codigo),
+        tiempoS: formatearTiempoWCA(item.best),
+        tiempoMs: item.best
+    };
+};
 
 export const filtrarPorPais = (cubers: Cuber[], codigoPais: string): Cuber[] => {
     if (codigoPais === 'All') return cubers;
@@ -75,43 +108,60 @@ export const calcularEstadisticas = (cubers: Cuber[]): EstadisticasGrupo | null 
     );
 
     const conteoPaises = agruparPorPais(cubers);
-    const paisesOrdenados = Object.entries(conteoPaises).sort((a, b) => b[1] - a[1]);
-    const [paisMasFrecuente, cantidad] = paisesOrdenados[0];
+    const entradasPaises = Object.entries(conteoPaises);
+
+    const [paisMasFrecuente, cantidad] = entradasPaises.reduce(
+        (maxActual, entrada) => (entrada[1] > maxActual[1] ? entrada : maxActual),
+        entradasPaises[0]
+    );
+
+    const mediaCentesimas = resumen.sumaMs / cubers.length;
 
     return {
-        mediaS: (resumen.sumaMs / cubers.length / 100).toFixed(2),
-        mejorS: (resumen.mejorMs / 100).toFixed(2),
-        peorS: (resumen.peorMs / 100).toFixed(2),
+        mediaS: formatearTiempoWCA(mediaCentesimas),
+        mejorS: formatearTiempoWCA(resumen.mejorMs),
+        peorS: formatearTiempoWCA(resumen.peorMs),
         paisDominante: `${paisMasFrecuente} (${cantidad})`,
-        totalPaisesDistintos: paisesOrdenados.length
+        totalPaisesDistintos: entradasPaises.length
     };
 };
 
-// Función de servicio que encapsula todo el pipeline de transformación
 export const procesarRankingCompleto = (
     items: RankingItem[],
-    detallesPorId: Record<string, PersonDetails>,
+    resultadoLotes: ResultadoLotes,
     codigoPais: string,
     limiteRaw: string,
-    perfilesFallidos: number
+    codigoEvento: CodigoEventoWCA,
+    tipoModalidad: TipoRanking
 ): ResultadoProcesamiento => {
-    const limiteSeguro = acotarLimite(limiteRaw, 1, 1000);
+    const limiteSeguro = acotarLimite(limiteRaw);
+    const { detallesPorId, fallidosRed, fallidosInexistentes } = resultadoLotes;
 
-    // Encadenamiento funcional: filtrar perfiles válidos -> construir objetos -> ordenar por tiempo -> filtrar por país -> recortar
-    const cubersFiltrados = items
-        .filter((item) => Boolean(detallesPorId[item.personId]))
-        .map((item) => construirCuber(item, detallesPorId[item.personId]))
+    const cubersValidos = items
+        .flatMap((item) => {
+            const detalle = detallesPorId[item.personId];
+            return detalle ? [construirCuber(item, detalle)] : [];
+        })
         .sort((a, b) => a.tiempoMs - b.tiempoMs);
 
-    const cubersPorPais = filtrarPorPais(cubersFiltrados, codigoPais).slice(0, limiteSeguro);
+    const codigosPresentes = cubersValidos.map((cuber) => cuber.codigoPais);
+    const opcionesPaisesActualizadas = obtenerOpcionesPaises(codigosPresentes);
+
+    const cubersPorPais = filtrarPorPais(cubersValidos, codigoPais).slice(0, limiteSeguro);
     const estadisticas = calcularEstadisticas(cubersPorPais);
     const etiquetaPais =
-        codigoPais === 'All' ? 'todo el mundo' : (nombresPaises[codigoPais] || codigoPais);
+        codigoPais === 'All'
+            ? 'todo el mundo'
+            : (nombresPaises[codigoPais] || `País (${codigoPais})`);
 
     return {
         cubers: cubersPorPais,
         estadisticas,
         etiquetaPais,
-        perfilesFallidos
+        nombreEvento: obtenerNombreEvento(codigoEvento),
+        tipoModalidad,
+        fallidosRed,
+        fallidosInexistentes,
+        opcionesPaisesActualizadas
     };
 };

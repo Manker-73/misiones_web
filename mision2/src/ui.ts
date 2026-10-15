@@ -1,5 +1,10 @@
 // src/ui.ts
-import type { Cuber, OpcionPais, ResultadoProcesamiento } from './transformers';
+import type {
+    Cuber,
+    OpcionEventoWCA,
+    OpcionPais,
+    ResultadoProcesamiento
+} from './types';
 
 const obtenerContenedorApp = (): HTMLDivElement => {
     const contenedor = document.getElementById('app') as HTMLDivElement | null;
@@ -26,9 +31,22 @@ export const toggleBoton = (boton: HTMLButtonElement, estaCargando: boolean): vo
     boton.classList.toggle('btn-deshabilitado', estaCargando);
 };
 
+export const inicializarSelectEventos = (
+    select: HTMLSelectElement,
+    eventos: readonly OpcionEventoWCA[]
+): void => {
+    const opcionesDOM = eventos.map(({ codigo, nombre }) => {
+        const option = crearElemento('option', [], nombre);
+        option.value = codigo;
+        return option;
+    });
+    select.replaceChildren(...opcionesDOM);
+};
+
 export const inicializarSelectPaises = (
     select: HTMLSelectElement,
-    opciones: OpcionPais[]
+    opciones: OpcionPais[],
+    seleccionPrevia: string = 'All'
 ): void => {
     const opcionGlobal = crearElemento('option', [], '🌍 Todo el mundo');
     opcionGlobal.value = 'All';
@@ -40,6 +58,9 @@ export const inicializarSelectPaises = (
     });
 
     select.replaceChildren(opcionGlobal, ...elementosOpcion);
+    select.value = opciones.some((op) => op.codigo === seleccionPrevia)
+        ? seleccionPrevia
+        : 'All';
 };
 
 export const mostrarLoader = (completados: number = 0, total: number = 0): void => {
@@ -67,25 +88,40 @@ export const mostrarError = (mensaje: string): void => {
 };
 
 const construirPanelEstadisticas = (resultado: ResultadoProcesamiento): HTMLElement => {
-    const { estadisticas, etiquetaPais, perfilesFallidos } = resultado;
+    const {
+        estadisticas,
+        etiquetaPais,
+        nombreEvento,
+        tipoModalidad,
+        fallidosRed,
+        fallidosInexistentes
+    } = resultado;
+
+    const textoModalidad = tipoModalidad === 'single' ? 'Single' : 'Average';
     const panel = crearElemento('section', ['stats-panel']);
-    const titulo = crearElemento('h3', ['stats-title'], `📊 Análisis (${etiquetaPais})`);
+    const titulo = crearElemento(
+        'h3',
+        ['stats-title'],
+        `📊 ${nombreEvento} (${textoModalidad}) — Análisis de ${etiquetaPais}`
+    );
 
     const listaMetricas = crearElemento('div', ['stats-metrics']);
 
     if (estadisticas) {
         const items: Array<[string, string]> = [
-            ['Tiempo medio:', `${estadisticas.mediaS}s`],
-            ['Mejor registro:', `${estadisticas.mejorS}s`],
-            ['Peor registro:', `${estadisticas.peorS}s`],
-            ['País dominante:', estadisticas.paisDominante]
+            ['Tiempo medio:', estadisticas.mediaS],
+            ['Mejor registro:', estadisticas.mejorS],
+            ['Peor registro:', estadisticas.peorS],
+            ['País dominante:', estadisticas.paisDominante],
+            ['Países distintos:', String(estadisticas.totalPaisesDistintos)]
         ];
 
         const nodosMetrica = items.map(([etiqueta, valor]) => {
-            const p = crearElemento('p', ['stats-item'], `${etiqueta} `);
-            const strong = crearElemento('strong', [], valor);
-            p.appendChild(strong);
-            return p;
+            const box = crearElemento('div', ['stat-box']);
+            const labelSpan = crearElemento('span', ['stat-label'], etiqueta);
+            const strongValor = crearElemento('strong', ['stat-value'], valor);
+            box.append(labelSpan, strongValor);
+            return box;
         });
 
         listaMetricas.append(...nodosMetrica);
@@ -93,11 +129,18 @@ const construirPanelEstadisticas = (resultado: ResultadoProcesamiento): HTMLElem
 
     panel.append(titulo, listaMetricas);
 
-    if (perfilesFallidos > 0) {
+    if (fallidosRed > 0 || fallidosInexistentes > 0) {
+        const detallesAviso: string[] = [];
+        if (fallidosRed > 0) {
+            detallesAviso.push(`${fallidosRed} por fallo de red o timeout`);
+        }
+        if (fallidosInexistentes > 0) {
+            detallesAviso.push(`${fallidosInexistentes} por perfil no disponible en la WCA`);
+        }
         const aviso = crearElemento(
             'p',
             ['stats-warning'],
-            `⚠️ Se omitieron ${perfilesFallidos} perfiles que no respondieron a tiempo.`
+            `⚠️ Perfiles omitidos: ${detallesAviso.join(' y ')}.`
         );
         panel.appendChild(aviso);
     }
@@ -105,20 +148,33 @@ const construirPanelEstadisticas = (resultado: ResultadoProcesamiento): HTMLElem
     return panel;
 };
 
+const obtenerInsigniaPosicion = (posicion: number): string => {
+    if (posicion === 1) return '🥇 #1';
+    if (posicion === 2) return '🥈 #2';
+    if (posicion === 3) return '🥉 #3';
+    return `#${posicion}`;
+};
+
 const construirTarjetaCuber = (cuber: Cuber, index: number): HTMLElement => {
-    const article = crearElemento('article', ['cuber-card']);
-    const titulo = crearElemento('h3', ['cuber-title'], `#${index + 1} - ${cuber.nombre}`);
+    const posicion = index + 1;
+    const clases = ['cuber-card'];
+    if (posicion <= 3) clases.push(`podium-${posicion}`);
+
+    const article = crearElemento('article', clases);
+
+    const headerCard = crearElemento('div', ['cuber-card-header']);
+    const rankBadge = crearElemento('span', ['cuber-rank'], obtenerInsigniaPosicion(posicion));
+    const timeBadge = crearElemento('strong', ['cuber-time'], `⏱️ ${cuber.tiempoS}`);
+    headerCard.append(rankBadge, timeBadge);
+
+    const titulo = crearElemento('h3', ['cuber-title'], cuber.nombre);
 
     const divInfo = crearElemento('div', ['cuber-info']);
     const idSpan = crearElemento('span', [], `👤 ID: ${cuber.id}`);
-    const paisSpan = crearElemento('span', [], `🌍 País: ${cuber.nombrePais}`);
+    const paisSpan = crearElemento('span', [], `${cuber.bandera} País: ${cuber.nombrePais}`);
     divInfo.append(idSpan, paisSpan);
 
-    const tiempoP = crearElemento('p', ['cuber-time'], '⏱️ Tiempo: ');
-    const tiempoStrong = crearElemento('strong', [], cuber.tiempoS);
-    tiempoP.appendChild(tiempoStrong);
-
-    article.append(titulo, divInfo, tiempoP);
+    article.append(headerCard, titulo, divInfo);
     return article;
 };
 
