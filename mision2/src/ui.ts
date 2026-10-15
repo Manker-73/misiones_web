@@ -1,5 +1,7 @@
+// src/ui.ts
 import type {
     Cuber,
+    DistribucionPais,
     OpcionEventoWCA,
     OpcionPais,
     ResultadoProcesamiento
@@ -24,10 +26,15 @@ const crearElemento = <K extends keyof HTMLElementTagNameMap>(
     return el;
 };
 
-export const toggleBoton = (boton: HTMLButtonElement, estaCargando: boolean): void => {
-    boton.disabled = estaCargando;
-    boton.textContent = estaCargando ? '⏳ Analizando...' : 'Analizar Récords';
-    boton.classList.toggle('btn-deshabilitado', estaCargando);
+export const toggleEstadoCarga = (
+    btnCargar: HTMLButtonElement,
+    btnCancelar: HTMLButtonElement,
+    estaCargando: boolean
+): void => {
+    btnCargar.disabled = estaCargando;
+    btnCargar.textContent = estaCargando ? '⏳ Analizando...' : 'Analizar Récords';
+    btnCargar.classList.toggle('btn-deshabilitado', estaCargando);
+    btnCancelar.hidden = !estaCargando;
 };
 
 export const inicializarSelectEventos = (
@@ -73,6 +80,24 @@ export const mostrarLoader = (completados: number = 0, total: number = 0): void 
     const subtitulo = crearElemento('p', ['progreso-texto'], textoProgreso);
 
     contenedor.append(titulo, subtitulo);
+
+    if (total > 0) {
+        const barraProgreso = crearElemento('progress', ['loader-progress']);
+        barraProgreso.max = total;
+        barraProgreso.value = completados;
+        contenedor.appendChild(barraProgreso);
+    }
+
+    app.replaceChildren(contenedor);
+};
+
+export const mostrarCancelado = (): void => {
+    const app = obtenerContenedorApp();
+    const contenedor = crearElemento('div', ['mensaje-estado']);
+    contenedor.append(
+        crearElemento('h3', [], '⏹️ Consulta cancelada'),
+        crearElemento('p', [], 'Se abortaron las peticiones en curso. Ajusta los filtros y pulsa Analizar Récords.')
+    );
     app.replaceChildren(contenedor);
 };
 
@@ -86,8 +111,42 @@ export const mostrarError = (mensaje: string): void => {
     app.replaceChildren(contenedor);
 };
 
+const construirGraficoPaises = (
+    distribucion: DistribucionPais[],
+    totalMostrados: number
+): HTMLElement => {
+    const contenedorGrafico = crearElemento('div', ['chart-container']);
+    const subtitulo = crearElemento(
+        'h4',
+        ['chart-title'],
+        'Top países'
+    );
+
+    const filas = distribucion.map(({ pais, cantidad, porcentaje }) => {
+        const fila = crearElemento('div', ['chart-row']);
+        const etiqueta = crearElemento('span', ['chart-label'], pais);
+
+        const barra = crearElemento('progress', ['chart-bar']);
+        barra.max = Math.max(totalMostrados, 1);
+        barra.value = cantidad;
+
+        const valorTexto = crearElemento(
+            'span',
+            ['chart-value'],
+            `${cantidad} (${porcentaje}%)`
+        );
+
+        fila.append(etiqueta, barra, valorTexto);
+        return fila;
+    });
+
+    contenedorGrafico.append(subtitulo, ...filas);
+    return contenedorGrafico;
+};
+
 const construirPanelEstadisticas = (resultado: ResultadoProcesamiento): HTMLElement => {
     const {
+        cubers,
         estadisticas,
         etiquetaPais,
         nombreEvento,
@@ -127,6 +186,12 @@ const construirPanelEstadisticas = (resultado: ResultadoProcesamiento): HTMLElem
     }
 
     panel.append(titulo, listaMetricas);
+
+    if (estadisticas && estadisticas.distribucionPaises.length > 0 && estadisticas.totalPaisesDistintos > 1) {
+        panel.appendChild(
+            construirGraficoPaises(estadisticas.distribucionPaises, cubers.length)
+        );
+    }
 
     if (fallidosRed > 0 || fallidosInexistentes > 0) {
         const detallesAviso: string[] = [];

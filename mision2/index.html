@@ -8,7 +8,7 @@
 <body>
   <header>
     <h1>WCA Speedcubing Analyzer</h1>
-    <p class="header-subtitle">Explorador multi-categoría de récords oficiales mundiales y métricas por país</p>
+    <p class="header-subtitle">Explorador oficial multi-categoría de récords mundiales, comparativa de modalidades y métricas por país</p>
   </header>
 
   <section class="controles-panel">
@@ -20,8 +20,8 @@
     <div class="control-group">
       <label for="select-tipo"><strong>Modalidad:</strong></label>
       <select id="select-tipo">
-        <option value="single">Single (Mejor resolución)</option>
-        <option value="average">Average (Media oficial)</option>
+        <option value="single">Single (Mejor resolución) ⚡</option>
+        <option value="average">Average (Media oficial) 📊</option>
       </select>
     </div>
 
@@ -35,7 +35,10 @@
       <input type="number" id="input-top" value="50" min="1" max="1000" class="input-top-number" />
     </div>
 
-    <button id="btn-cargar">Analizar Récords</button>
+    <div class="acciones-group">
+      <button id="btn-cargar" type="button">Analizar Récords</button>
+      <button id="btn-cancelar" type="button" class="btn-cancelar" hidden>⏹️ Cancelar</button>
+    </div>
   </section>
 
   <main id="app">

@@ -1,11 +1,17 @@
 import './style.css';
-import { fetchRanking, fetchDetallesEnLotes } from './api';
+import {
+    ConsultaCanceladaError,
+    fetchDetallesEnLotes,
+    fetchRanking
+} from './api';
 import {
     obtenerOpcionesEventos,
     obtenerOpcionesPaises,
-    procesarRankingCompleto,
-    acotarLimite,
     validarEventoWCA
+} from './paises';
+import {
+    acotarLimite,
+    procesarRankingCompleto
 } from './transformers';
 import {
     LIMITE_MAXIMO_RANKING,
@@ -14,25 +20,42 @@ import {
     type TipoRanking
 } from './types';
 import {
-    mostrarLoader,
-    pintarResultados,
-    mostrarError,
     inicializarSelectEventos,
     inicializarSelectPaises,
-    toggleBoton
+    mostrarCancelado,
+    mostrarError,
+    mostrarLoader,
+    pintarResultados,
+    toggleEstadoCarga
 } from './ui';
 
 const btnCargar = document.getElementById('btn-cargar') as HTMLButtonElement;
+const btnCancelar = document.getElementById('btn-cancelar') as HTMLButtonElement;
 const selectEvento = document.getElementById('select-evento') as HTMLSelectElement;
 const selectTipo = document.getElementById('select-tipo') as HTMLSelectElement;
 const selectPais = document.getElementById('select-pais') as HTMLSelectElement;
 const inputTop = document.getElementById('input-top') as HTMLInputElement;
 
-// Inicializamos los selectores dinámicos al arrancar
 inicializarSelectEventos(selectEvento, obtenerOpcionesEventos());
 inicializarSelectPaises(selectPais, obtenerOpcionesPaises());
 
+let controladorActivo: AbortController | null = null;
+
+const abortarConsultaActiva = (): void => {
+    if (controladorActivo) {
+        controladorActivo.abort();
+        controladorActivo = null;
+    }
+};
+
 const ejecutarAnalisisRanking = async (): Promise<void> => {
+    // Si había una consulta previa en curso, la abortamos antes de abrir la nueva
+    abortarConsultaActiva();
+
+    const controller = new AbortController();
+    controladorActivo = controller;
+    const { signal } = controller;
+
     try {
         const limiteValidado = acotarLimite(
             inputTop.value,
@@ -46,10 +69,14 @@ const ejecutarAnalisisRanking = async (): Promise<void> => {
             selectTipo.value === 'average' ? 'average' : 'single';
         const paisSeleccionado = selectPais.value;
 
-        toggleBoton(btnCargar, true);
+        toggleEstadoCarga(btnCargar, btnCancelar, true);
         mostrarLoader();
 
-        const rankingCrudo = await fetchRanking(eventoSeleccionado, tipoSeleccionado);
+        const rankingCrudo = await fetchRanking(
+            eventoSeleccionado,
+            tipoSeleccionado,
+            signal
+        );
 
         const cantidadNecesaria =
             paisSeleccionado === 'All' ? limiteValidado : LIMITE_MAXIMO_RANKING;
@@ -58,8 +85,17 @@ const ejecutarAnalisisRanking = async (): Promise<void> => {
         const resultadoLotes = await fetchDetallesEnLotes(
             muestraRanking,
             TAMANO_LOTE_PETICIONES,
-            (completados, total) => mostrarLoader(completados, total)
+            (completados, total) => {
+                if (!signal.aborted) {
+                    mostrarLoader(completados, total);
+                }
+            },
+            signal
         );
+
+        if (signal.aborted) {
+            throw new ConsultaCanceladaError();
+        }
 
         const resultado = procesarRankingCompleto(
             muestraRanking,
@@ -78,6 +114,14 @@ const ejecutarAnalisisRanking = async (): Promise<void> => {
 
         pintarResultados(resultado);
     } catch (error) {
+        // Si esta consulta fue reemplazada por otra nueva, ignoramos su cierre visual
+        if (controladorActivo !== null && controladorActivo !== controller) {
+            return;
+        }
+        if (error instanceof ConsultaCanceladaError || signal.aborted) {
+            mostrarCancelado();
+            return;
+        }
         console.error('Fallo en la orquestación:', error);
         const mensaje =
             error instanceof Error
@@ -85,8 +129,28 @@ const ejecutarAnalisisRanking = async (): Promise<void> => {
                 : 'Error inesperado al procesar los datos de la WCA.';
         mostrarError(mensaje);
     } finally {
-        toggleBoton(btnCargar, false);
+        if (controladorActivo === controller) {
+            controladorActivo = null;
+        }
+        // Si no hay ninguna consulta nueva en vuelo, rehabilitamos siempre el botón
+        if (controladorActivo === null) {
+            toggleEstadoCarga(btnCargar, btnCancelar, false);
+        }
     }
 };
 
 btnCargar.addEventListener('click', ejecutarAnalisisRanking);
+
+btnCancelar.addEventListener('click', () => {
+    abortarConsultaActiva();
+    toggleEstadoCarga(btnCargar, btnCancelar, false);
+    mostrarCancelado();
+});
+
+[selectEvento, selectTipo, selectPais].forEach((selector) => {
+    selector.addEventListener('change', () => {
+        if (controladorActivo) {
+            ejecutarAnalisisRanking();
+        }
+    });
+});

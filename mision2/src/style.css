@@ -56,7 +56,8 @@ header h1 {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
-.control-group {
+.control-group,
+.acciones-group {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -91,6 +92,14 @@ button {
 button:hover:not(:disabled) {
     background-color: #1d4ed8;
     transform: translateY(-1px);
+}
+
+.btn-cancelar {
+    background-color: var(--accent-red);
+}
+
+.btn-cancelar:hover:not(:disabled) {
+    background-color: #b91c1c;
 }
 
 .btn-deshabilitado {
@@ -139,6 +148,54 @@ button:hover:not(:disabled) {
 .stat-value {
     font-size: 1.15rem;
     color: var(--primary);
+}
+
+.chart-container {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.chart-title {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+.chart-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 90px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.chart-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chart-bar,
+.loader-progress {
+    width: 100%;
+    height: 12px;
+    border-radius: 999px;
+    accent-color: var(--primary);
+}
+
+.loader-progress {
+    max-width: 360px;
+    margin-top: 12px;
+}
+
+.chart-value {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: right;
+    font-weight: 600;
 }
 
 .stats-warning {

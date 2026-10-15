@@ -1,4 +1,11 @@
-import { eliminarDeCache, guardarEnCache, leerDeCache } from './cache';
+// src/api.ts
+import {
+    TTL_PERFIL_MS,
+    TTL_RANKING_MS,
+    eliminarDeCache,
+    guardarEnCache,
+    leerDeCache
+} from './cache';
 import {
     TAMANO_LOTE_PETICIONES,
     type CodigoEventoWCA,
@@ -11,59 +18,77 @@ import {
 } from './types';
 
 const TIMEOUT_MS = 8000;
-const TTL_PERFIL_MS = 30 * 24 * 60 * 60 * 1000;
 
-const fetchConTimeout = async (url: string): Promise<Response> => {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), TIMEOUT_MS);
+export class ConsultaCanceladaError extends Error {
+    constructor() {
+        super('Consulta cancelada por el usuario.');
+        this.name = 'ConsultaCanceladaError';
+    }
+}
+
+const fetchConTimeout = async (url: string, externalSignal?: AbortSignal): Promise<Response> => {
+    if (externalSignal?.aborted) {
+        throw new ConsultaCanceladaError();
+    }
+
+    const timeoutController = new AbortController();
+    const timeoutId = window.setTimeout(() => timeoutController.abort(), TIMEOUT_MS);
+    const abortarPorUsuario = (): void => timeoutController.abort();
+
+    externalSignal?.addEventListener('abort', abortarPorUsuario, { once: true });
 
     try {
-        return await fetch(url, { signal: controller.signal });
+        return await fetch(url, { signal: timeoutController.signal });
     } catch (error) {
+        if (externalSignal?.aborted) {
+            throw new ConsultaCanceladaError();
+        }
         if (error instanceof DOMException && error.name === 'AbortError') {
             throw new Error('Error de red: Tiempo de espera agotado (Timeout de 8s superado).');
         }
         throw new Error('Error de red: Sin conexión con el servidor. Comprueba tu acceso a internet.');
     } finally {
         window.clearTimeout(timeoutId);
+        externalSignal?.removeEventListener('abort', abortarPorUsuario);
     }
 };
 
-const esRankingValido = (data: unknown): data is RankingResponse => {
+export const esRankingValido = (data: unknown): data is RankingResponse => {
     if (typeof data !== 'object' || data === null) return false;
     const obj = data as Record<string, unknown>;
     if (!Array.isArray(obj.items)) return false;
-    return obj.items.every(
-        (item) =>
-            typeof item === 'object' &&
-            item !== null &&
-            typeof (item as Record<string, unknown>).personId === 'string' &&
-            typeof (item as Record<string, unknown>).best === 'number'
+    return obj.items.every((item) => {
+        if (typeof item !== 'object' || item === null) return false;
+        const registro = item as Record<string, unknown>;
+        return (
+            typeof registro.personId === 'string' &&
+            registro.personId.trim().length > 0 &&
+            typeof registro.best === 'number' &&
+            Number.isFinite(registro.best) &&
+            registro.best > 0
+        );
+    });
+};
+
+export const esPersonaValida = (data: unknown): data is PersonDetails => {
+    if (typeof data !== 'object' || data === null) return false;
+    const obj = data as Record<string, unknown>;
+    return (
+        typeof obj.name === 'string' &&
+        obj.name.trim().length > 0 &&
+        typeof obj.country === 'string' &&
+        obj.country.trim().length > 0
     );
 };
 
-const esPersonaValida = (data: unknown): data is PersonDetails => {
-    if (typeof data !== 'object' || data === null) return false;
-    const obj = data as Record<string, unknown>;
-    return typeof obj.name === 'string' && typeof obj.country === 'string';
-};
-
-export const fetchRanking = async (
+export const fetchRankingDesdeRed = async (
     evento: CodigoEventoWCA,
-    tipo: TipoRanking
+    tipo: TipoRanking,
+    signal?: AbortSignal
 ): Promise<RankingResponse> => {
     const url = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/refs/heads/v1/rank/world/${tipo}/${evento}.json`;
-    const cacheKey = `wca_ranking_${evento}_${tipo}`;
+    const response = await fetchConTimeout(url, signal);
 
-    const cache = leerDeCache<RankingResponse>(cacheKey);
-    if (cache !== null) {
-        if (esRankingValido(cache)) {
-            return cache;
-        }
-        eliminarDeCache(cacheKey);
-    }
-
-    const response = await fetchConTimeout(url);
     if (!response.ok) {
         throw new Error(
             `Error HTTP ${response.status}: El servidor rechazó la petición (${response.statusText || 'No encontrado'}).`
@@ -74,6 +99,7 @@ export const fetchRanking = async (
     try {
         data = await response.json();
     } catch {
+        if (signal?.aborted) throw new ConsultaCanceladaError();
         throw new Error('Datos inválidos: La respuesta recibida no tiene un formato JSON válido.');
     }
 
@@ -81,26 +107,43 @@ export const fetchRanking = async (
         throw new Error('Datos inválidos: La estructura del ranking de la WCA no contiene una lista válida.');
     }
 
-    guardarEnCache(cacheKey, data);
     return data;
 };
 
-export const fetchCuberDetails = async (personId: string): Promise<ResultadoDetalle> => {
-    const url = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/refs/heads/v1/persons/${personId}.json`;
-    const cacheKey = `wca_person_${personId}`;
+export const fetchRanking = async (
+    evento: CodigoEventoWCA,
+    tipo: TipoRanking,
+    signal?: AbortSignal
+): Promise<RankingResponse> => {
+    if (signal?.aborted) throw new ConsultaCanceladaError();
 
-    const cache = leerDeCache<PersonDetails>(cacheKey, TTL_PERFIL_MS);
+    const cacheKey = `wca_ranking_${evento}_${tipo}`;
+    const cache = leerDeCache<RankingResponse>(cacheKey, TTL_RANKING_MS);
     if (cache !== null) {
-        if (esPersonaValida(cache)) {
-            return { id: personId, detalle: cache };
+        if (esRankingValido(cache)) {
+            return cache;
         }
         eliminarDeCache(cacheKey);
     }
 
+    const data = await fetchRankingDesdeRed(evento, tipo, signal);
+    guardarEnCache(cacheKey, data);
+    return data;
+};
+
+export const fetchCuberDetailsDesdeRed = async (
+    personId: string,
+    signal?: AbortSignal
+): Promise<ResultadoDetalle> => {
+    const url = `https://raw.githubusercontent.com/robiningelbrecht/wca-rest-api/refs/heads/v1/persons/${personId}.json`;
+
     let response: Response;
     try {
-        response = await fetchConTimeout(url);
-    } catch {
+        response = await fetchConTimeout(url, signal);
+    } catch (error) {
+        if (error instanceof ConsultaCanceladaError || signal?.aborted) {
+            throw new ConsultaCanceladaError();
+        }
         return { id: personId, detalle: null, motivoFallo: 'red' };
     }
 
@@ -119,17 +162,40 @@ export const fetchCuberDetails = async (personId: string): Promise<ResultadoDeta
             country: data.country.trim().toUpperCase()
         };
 
-        guardarEnCache(cacheKey, dataLigera);
         return { id: personId, detalle: dataLigera };
     } catch {
+        if (signal?.aborted) throw new ConsultaCanceladaError();
         return { id: personId, detalle: null, motivoFallo: 'datos_invalidos' };
     }
+};
+
+export const fetchCuberDetails = async (
+    personId: string,
+    signal?: AbortSignal
+): Promise<ResultadoDetalle> => {
+    if (signal?.aborted) throw new ConsultaCanceladaError();
+
+    const cacheKey = `wca_person_${personId}`;
+    const cache = leerDeCache<PersonDetails>(cacheKey, TTL_PERFIL_MS);
+    if (cache !== null) {
+        if (esPersonaValida(cache)) {
+            return { id: personId, detalle: cache };
+        }
+        eliminarDeCache(cacheKey);
+    }
+
+    const resultado = await fetchCuberDetailsDesdeRed(personId, signal);
+    if (resultado.detalle) {
+        guardarEnCache(cacheKey, resultado.detalle);
+    }
+    return resultado;
 };
 
 export const fetchDetallesEnLotes = async (
     items: RankingItem[],
     tamanoLote: number = TAMANO_LOTE_PETICIONES,
-    onProgress?: (completados: number, total: number) => void
+    onProgress?: (completados: number, total: number) => void,
+    signal?: AbortSignal
 ): Promise<ResultadoLotes> => {
     const detallesPorId: Record<string, PersonDetails> = {};
     let fallidosRed = 0;
@@ -141,12 +207,18 @@ export const fetchDetallesEnLotes = async (
         items.slice(idx * tamanoLote, (idx + 1) * tamanoLote)
     );
 
-    await lotes.reduce(async (promesaAnterior, lote, indiceLote) => {
-        await promesaAnterior;
+    for (const [indiceLote, lote] of lotes.entries()) {
+        if (signal?.aborted) {
+            throw new ConsultaCanceladaError();
+        }
 
         const resultadosLote = await Promise.all(
-            lote.map((item) => fetchCuberDetails(item.personId))
+            lote.map((item) => fetchCuberDetails(item.personId, signal))
         );
+
+        if (signal?.aborted) {
+            throw new ConsultaCanceladaError();
+        }
 
         let fallosRedEnLote = 0;
 
@@ -169,7 +241,7 @@ export const fetchDetallesEnLotes = async (
 
         const completados = Math.min((indiceLote + 1) * tamanoLote, total);
         if (onProgress) onProgress(completados, total);
-    }, Promise.resolve());
+    }
 
     return { detallesPorId, fallidosRed, fallidosInexistentes };
 };

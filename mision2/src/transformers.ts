@@ -1,58 +1,25 @@
-import { nombresPaises } from './paises';
+// src/transformers.ts
+import { formatearPorcentaje, formatearTiempoWCA } from './formatters';
 import {
-    EVENTOS_WCA,
+    obtenerEtiquetaFiltroPais,
+    obtenerNombreEvento,
+    obtenerNombrePais,
+    obtenerOpcionesPaises
+} from './paises';
+import {
     LIMITE_DEFECTO_RANKING,
     LIMITE_MAXIMO_RANKING,
     LIMITE_MINIMO_RANKING,
     type CodigoEventoWCA,
     type Cuber,
+    type DistribucionPais,
     type EstadisticasGrupo,
-    type OpcionEventoWCA,
-    type OpcionPais,
     type PersonDetails,
     type RankingItem,
     type ResultadoLotes,
     type ResultadoProcesamiento,
     type TipoRanking
 } from './types';
-
-export const obtenerOpcionesEventos = (): readonly OpcionEventoWCA[] => EVENTOS_WCA;
-
-export const validarEventoWCA = (valor: string): CodigoEventoWCA => {
-    const encontrado = EVENTOS_WCA.find((ev) => ev.codigo === valor);
-    return encontrado ? encontrado.codigo : '333';
-};
-
-export const obtenerNombreEvento = (codigo: CodigoEventoWCA): string => {
-    const encontrado = EVENTOS_WCA.find((ev) => ev.codigo === codigo);
-    return encontrado ? encontrado.nombre : codigo;
-};
-
-// Formatea centésimas de segundo al estándar WCA 
-export const formatearTiempoWCA = (centesimas: number): string => {
-    const totalSegundos = centesimas / 100;
-    if (totalSegundos < 60) {
-        return `${totalSegundos.toFixed(2)}s`;
-    }
-    const minutos = Math.floor(totalSegundos / 60);
-    const segundosRestantes = (totalSegundos % 60).toFixed(2).padStart(5, '0');
-    return `${minutos}:${segundosRestantes}`;
-};
-
-export const obtenerOpcionesPaises = (codigosExtra: string[] = []): OpcionPais[] => {
-    const mapaCombinado: Record<string, string> = { ...nombresPaises };
-
-    codigosExtra.forEach((codigo) => {
-        const codigoNormalizado = codigo.trim().toUpperCase();
-        if (codigoNormalizado && !mapaCombinado[codigoNormalizado]) {
-            mapaCombinado[codigoNormalizado] = `País (${codigoNormalizado})`;
-        }
-    });
-
-    return Object.entries(mapaCombinado)
-        .map(([codigo, nombre]) => ({ codigo, nombre }))
-        .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-};
 
 export const acotarLimite = (
     valorRaw: string,
@@ -70,7 +37,7 @@ export const construirCuber = (item: RankingItem, detalle: PersonDetails): Cuber
         id: item.personId,
         nombre: detalle.name,
         codigoPais: codigo,
-        nombrePais: nombresPaises[codigo] || `País (${codigo})`,
+        nombrePais: obtenerNombrePais(codigo),
         tiempoS: formatearTiempoWCA(item.best),
         tiempoMs: item.best
     };
@@ -87,15 +54,30 @@ export const agruparPorPais = (cubers: Cuber[]): Record<string, number> =>
         return acc;
     }, {});
 
+export const calcularDistribucionPaises = (
+    conteoPaises: Record<string, number>,
+    totalCubers: number,
+    topN: number = 5
+): DistribucionPais[] =>
+    Object.entries(conteoPaises)
+        .map(([pais, cantidad]) => ({
+            pais,
+            cantidad,
+            porcentaje: formatearPorcentaje(cantidad, totalCubers)
+        }))
+        .sort((a, b) => b.cantidad - a.cantidad)
+        .slice(0, topN);
+
 export const calcularEstadisticas = (cubers: Cuber[]): EstadisticasGrupo | null => {
     if (cubers.length === 0) return null;
 
     const resumen = cubers.reduce(
-        (acc, cuber) => ({
-            sumaMs: acc.sumaMs + cuber.tiempoMs,
-            mejorMs: Math.min(acc.mejorMs, cuber.tiempoMs),
-            peorMs: Math.max(acc.peorMs, cuber.tiempoMs)
-        }),
+        (acc, cuber) => {
+            acc.sumaMs += cuber.tiempoMs;
+            if (cuber.tiempoMs < acc.mejorMs) acc.mejorMs = cuber.tiempoMs;
+            if (cuber.tiempoMs > acc.peorMs) acc.peorMs = cuber.tiempoMs;
+            return acc;
+        },
         { sumaMs: 0, mejorMs: Infinity, peorMs: -Infinity }
     );
 
@@ -108,13 +90,15 @@ export const calcularEstadisticas = (cubers: Cuber[]): EstadisticasGrupo | null 
     );
 
     const mediaCentesimas = resumen.sumaMs / cubers.length;
+    const distribucionPaises = calcularDistribucionPaises(conteoPaises, cubers.length, 5);
 
     return {
         mediaS: formatearTiempoWCA(mediaCentesimas),
         mejorS: formatearTiempoWCA(resumen.mejorMs),
         peorS: formatearTiempoWCA(resumen.peorMs),
         paisDominante: `${paisMasFrecuente} (${cantidad})`,
-        totalPaisesDistintos: entradasPaises.length
+        totalPaisesDistintos: entradasPaises.length,
+        distribucionPaises
     };
 };
 
@@ -129,27 +113,21 @@ export const procesarRankingCompleto = (
     const limiteSeguro = acotarLimite(limiteRaw);
     const { detallesPorId, fallidosRed, fallidosInexistentes } = resultadoLotes;
 
-    const cubersValidos = items
-        .flatMap((item) => {
-            const detalle = detallesPorId[item.personId];
-            return detalle ? [construirCuber(item, detalle)] : [];
-        })
+    const cubersOrdenados = items
+        .filter((item) => Boolean(detallesPorId[item.personId]))
+        .map((item) => construirCuber(item, detallesPorId[item.personId]))
         .sort((a, b) => a.tiempoMs - b.tiempoMs);
 
-    const codigosPresentes = cubersValidos.map((cuber) => cuber.codigoPais);
+    const codigosPresentes = cubersOrdenados.map((cuber) => cuber.codigoPais);
     const opcionesPaisesActualizadas = obtenerOpcionesPaises(codigosPresentes);
 
-    const cubersPorPais = filtrarPorPais(cubersValidos, codigoPais).slice(0, limiteSeguro);
+    const cubersPorPais = filtrarPorPais(cubersOrdenados, codigoPais).slice(0, limiteSeguro);
     const estadisticas = calcularEstadisticas(cubersPorPais);
-    const etiquetaPais =
-        codigoPais === 'All'
-            ? 'todo el mundo'
-            : (nombresPaises[codigoPais] || `País (${codigoPais})`);
 
     return {
         cubers: cubersPorPais,
         estadisticas,
-        etiquetaPais,
+        etiquetaPais: obtenerEtiquetaFiltroPais(codigoPais),
         nombreEvento: obtenerNombreEvento(codigoEvento),
         tipoModalidad,
         fallidosRed,

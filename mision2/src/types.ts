@@ -78,12 +78,19 @@ export interface Cuber {
     tiempoMs: number;
 }
 
+export interface DistribucionPais {
+    pais: string;
+    cantidad: number;
+    porcentaje: number;
+}
+
 export interface EstadisticasGrupo {
     mediaS: string;
     mejorS: string;
     peorS: string;
     paisDominante: string;
     totalPaisesDistintos: number;
+    distribucionPaises: DistribucionPais[];
 }
 
 export interface OpcionPais {

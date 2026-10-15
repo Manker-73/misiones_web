@@ -1,5 +1,12 @@
-// Exportamos el diccionario para que cualquier parte de la app pueda usarlo
-export const nombresPaises: { [key: string]: string } = {
+// src/paises.ts
+import {
+    EVENTOS_WCA,
+    type CodigoEventoWCA,
+    type OpcionEventoWCA,
+    type OpcionPais
+} from './types';
+
+export const nombresPaises: Record<string, string> = {
     'AF': 'Afganistán',
     'AL': 'Albania',
     'DE': 'Alemania',
@@ -197,4 +204,39 @@ export const nombresPaises: { [key: string]: string } = {
     'DJ': 'Yibuti',
     'ZM': 'Zambia',
     'ZW': 'Zimbabue'
+};
+
+export const obtenerNombrePais = (codigoIso: string): string => {
+    const limpio = codigoIso.trim().toUpperCase();
+    return nombresPaises[limpio] || `País (${limpio})`;
+};
+
+export const obtenerEtiquetaFiltroPais = (codigoPais: string): string =>
+    codigoPais === 'All' ? 'todo el mundo' : obtenerNombrePais(codigoPais);
+
+export const obtenerOpcionesPaises = (codigosExtra: string[] = []): OpcionPais[] => {
+    const mapaCombinado: Record<string, string> = { ...nombresPaises };
+
+    codigosExtra.forEach((codigo) => {
+        const codigoNormalizado = codigo.trim().toUpperCase();
+        if (codigoNormalizado && !mapaCombinado[codigoNormalizado]) {
+            mapaCombinado[codigoNormalizado] = `País (${codigoNormalizado})`;
+        }
+    });
+
+    return Object.entries(mapaCombinado)
+        .map(([codigo, nombre]) => ({ codigo, nombre }))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+};
+
+export const obtenerOpcionesEventos = (): readonly OpcionEventoWCA[] => EVENTOS_WCA;
+
+export const validarEventoWCA = (valor: string): CodigoEventoWCA => {
+    const encontrado = EVENTOS_WCA.find((ev) => ev.codigo === valor);
+    return encontrado ? encontrado.codigo : '333';
+};
+
+export const obtenerNombreEvento = (codigo: CodigoEventoWCA): string => {
+    const encontrado = EVENTOS_WCA.find((ev) => ev.codigo === codigo);
+    return encontrado ? encontrado.nombre : codigo;
 };
