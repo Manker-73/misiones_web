@@ -74,7 +74,6 @@ export interface Cuber {
     nombre: string;
     codigoPais: string;
     nombrePais: string;
-    bandera: string;
     tiempoS: string;
     tiempoMs: number;
 }

@@ -1,5 +1,3 @@
-// src/paises.ts
-
 // Exportamos el diccionario para que cualquier parte de la app pueda usarlo
 export const nombresPaises: { [key: string]: string } = {
     'AF': 'Afganistán',

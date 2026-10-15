@@ -1,4 +1,3 @@
-// src/ui.ts
 import type {
     Cuber,
     OpcionEventoWCA,
@@ -171,7 +170,7 @@ const construirTarjetaCuber = (cuber: Cuber, index: number): HTMLElement => {
 
     const divInfo = crearElemento('div', ['cuber-info']);
     const idSpan = crearElemento('span', [], `👤 ID: ${cuber.id}`);
-    const paisSpan = crearElemento('span', [], `${cuber.bandera} País: ${cuber.nombrePais}`);
+    const paisSpan = crearElemento('span', [], `País: ${cuber.nombrePais}`);
     divInfo.append(idSpan, paisSpan);
 
     article.append(headerCard, titulo, divInfo);

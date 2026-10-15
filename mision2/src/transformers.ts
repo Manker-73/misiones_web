@@ -28,7 +28,7 @@ export const obtenerNombreEvento = (codigo: CodigoEventoWCA): string => {
     return encontrado ? encontrado.nombre : codigo;
 };
 
-// Formatea centésimas de segundo al estándar WCA (ej. 313 -> "3.13s", 6956 -> "1:09.56")
+// Formatea centésimas de segundo al estándar WCA 
 export const formatearTiempoWCA = (centesimas: number): string => {
     const totalSegundos = centesimas / 100;
     if (totalSegundos < 60) {
@@ -37,13 +37,6 @@ export const formatearTiempoWCA = (centesimas: number): string => {
     const minutos = Math.floor(totalSegundos / 60);
     const segundosRestantes = (totalSegundos % 60).toFixed(2).padStart(5, '0');
     return `${minutos}:${segundosRestantes}`;
-};
-
-export const codigoABandera = (codigoIso: string): string => {
-    const limpio = codigoIso.trim().toUpperCase();
-    if (!/^[A-Z]{2}$/.test(limpio)) return '🏳️';
-    const puntos = Array.from(limpio).map((letra) => 127397 + letra.charCodeAt(0));
-    return String.fromCodePoint(...puntos);
 };
 
 export const obtenerOpcionesPaises = (codigosExtra: string[] = []): OpcionPais[] => {
@@ -78,7 +71,6 @@ export const construirCuber = (item: RankingItem, detalle: PersonDetails): Cuber
         nombre: detalle.name,
         codigoPais: codigo,
         nombrePais: nombresPaises[codigo] || `País (${codigo})`,
-        bandera: codigoABandera(codigo),
         tiempoS: formatearTiempoWCA(item.best),
         tiempoMs: item.best
     };
