@@ -1,22 +1,26 @@
-import type { ResultadoProcesamiento } from '../types';
+// src/components/PanelEstadisticas.tsx
+import type { EstadisticasGrupo, TipoRanking } from '../types';
+import { GraficoPaises } from './GraficoPaises';
 
 interface Props {
-  resultado: ResultadoProcesamiento;
+  estadisticas: EstadisticasGrupo;
+  totalMostrados: number;
+  etiquetaPais: string;
+  nombreEvento: string;
+  tipoModalidad: TipoRanking;
+  fallidosRed: number;
+  fallidosInexistentes: number;
 }
 
-export function PanelEstadisticas({ resultado }: Props) {
-  const {
-    cubers,
-    estadisticas,
-    etiquetaPais,
-    nombreEvento,
-    tipoModalidad,
-    fallidosRed,
-    fallidosInexistentes
-  } = resultado;
-
-  if (!estadisticas) return null;
-
+export function PanelEstadisticas({
+  estadisticas,
+  totalMostrados,
+  etiquetaPais,
+  nombreEvento,
+  tipoModalidad,
+  fallidosRed,
+  fallidosInexistentes
+}: Props) {
   const textoModalidad = tipoModalidad === 'single' ? 'Single' : 'Average';
   const metricas: Array<[string, string]> = [
     ['Tiempo medio:', estadisticas.mediaS],
@@ -49,24 +53,13 @@ export function PanelEstadisticas({ resultado }: Props) {
         ))}
       </div>
 
-      {estadisticas.distribucionPaises.length > 0 && estadisticas.totalPaisesDistintos > 1 && (
-        <div className="chart-container">
-          <h4 className="chart-title">Top países</h4>
-          {estadisticas.distribucionPaises.map(({ pais, cantidad, porcentaje }) => (
-            <div key={pais} className="chart-row">
-              <span className="chart-label">{pais}</span>
-              <progress
-                className="chart-bar"
-                max={Math.max(cubers.length, 1)}
-                value={cantidad}
-              />
-              <span className="chart-value">
-                {cantidad} ({porcentaje}%)
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
+      {estadisticas.distribucionPaises.length > 0 &&
+        estadisticas.totalPaisesDistintos > 1 && (
+          <GraficoPaises
+            distribucion={estadisticas.distribucionPaises}
+            totalMostrados={totalMostrados}
+          />
+        )}
 
       {detallesAviso.length > 0 && (
         <p className="stats-warning">
