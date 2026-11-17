@@ -152,3 +152,31 @@ button:disabled {
   color: var(--color-ok);
   font-weight: 600;
 }
+
+/* ---------- Accesibilidad ---------- */
+.grupo-opciones {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+/* El navegador añade padding a las <legend>: las alineamos con el resto de etiquetas */
+fieldset legend {
+  padding: 0;
+}
+
+/* Checkbox + etiqueta en línea (también cuando va dentro de un .campo) */
+.campo-check {
+  display: flex;
+}
+
+/* Foco bien visible al navegar con teclado */
+:focus-visible {
+  outline: 3px solid var(--color-acento);
+  outline-offset: 2px;
+}
+
+/* Campos con error: no solo color, también un borde más grueso */
+.campo [aria-invalid="true"]:not([type="checkbox"]) {
+  border: 2px solid var(--color-error);
+}
