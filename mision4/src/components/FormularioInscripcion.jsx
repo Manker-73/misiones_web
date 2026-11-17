@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   esquemaInscripcion,
@@ -24,7 +24,7 @@ function FormularioInscripcion() {
     register,
     handleSubmit,
     reset,
-    watch,
+    control,
     setValue,
     getValues,
     formState: { errors },
@@ -35,8 +35,11 @@ function FormularioInscripcion() {
   });
 
   // Campos que se muestran u ocultan según otros campos
-  const primeraCompeticion = watch("primeraCompeticion");
-  const eventos = watch("eventos");
+  // useWatch (y no watch) para que React Compiler pueda optimizar el componente
+  const [primeraCompeticion, eventos] = useWatch({
+    control,
+    name: ["primeraCompeticion", "eventos"],
+  });
   const compite333 = eventos?.includes("333");
 
   // Props de accesibilidad de un campo: lo marca como inválido y lo enlaza con su error
