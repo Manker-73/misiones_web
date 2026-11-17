@@ -23,3 +23,12 @@ async function peticion(ruta, opciones) {
 export function obtenerInscripciones() {
   return peticion("/inscripciones");
 }
+
+export function crearInscripcion(datos) {
+  return peticion("/inscripciones", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    // datos ya viene validado y transformado por Zod (fecha ISO, WCA ID en mayúsculas…)
+    body: JSON.stringify({ ...datos, fechaInscripcion: new Date().toISOString() }),
+  });
+}

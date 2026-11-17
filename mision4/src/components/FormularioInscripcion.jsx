@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -8,6 +7,7 @@ import {
   MESES,
 } from "../schemas/inscripcion";
 import MensajeError from "./MensajeError";
+import { useCrearInscripcion } from "../hooks/useInscripciones";
 
 // Si cambia una parte de la fecha, hay que revalidar también las otras dos
 // (p. ej. el error "febrero no tiene 31 días" está en el día, pero se arregla cambiando el mes)
@@ -18,7 +18,7 @@ const depsFecha = (parte) => PARTES_FECHA.filter((p) => p !== parte);
 const describir = (...ids) => ids.filter(Boolean).join(" ") || undefined;
 
 function FormularioInscripcion() {
-  const [ultimaInscripcion, setUltimaInscripcion] = useState(null);
+  const mutacion = useCrearInscripcion();
 
   const {
     register,
@@ -27,7 +27,7 @@ function FormularioInscripcion() {
     watch,
     setValue,
     getValues,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(esquemaInscripcion),
     defaultValues: valoresIniciales,
@@ -50,16 +50,23 @@ function FormularioInscripcion() {
 
   const errorNac = errors.nacimiento ?? {};
 
-  async function onSubmit(datos) {
-    // Simulamos la petición; en el paso 6 la cambiaremos por useMutation
-    setUltimaInscripcion(null);
-    await new Promise((r) => setTimeout(r, 800));
-    setUltimaInscripcion(datos);
-    reset();
+  // handleSubmit solo llama aquí si Zod da el visto bueno: datos ya está validado
+  function onSubmit(datos) {
+    mutacion.mutate(datos, {
+      // Solo limpiamos el formulario si el servidor lo ha guardado;
+      // si falla, el usuario conserva lo que escribió y puede reintentar
+      onSuccess: () => reset(),
+    });
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="formulario">
+    <form
+      // Si el envío no pasa la validación, borramos el éxito/error del envío anterior
+      // para que no se confunda con el intento actual
+      onSubmit={handleSubmit(onSubmit, () => mutacion.reset())}
+      noValidate
+      className="formulario"
+    >
       <h2>Inscripción</h2>
       <p className="pista">Todos los campos son obligatorios salvo los marcados como opcionales.</p>
 
@@ -244,14 +251,23 @@ function FormularioInscripcion() {
       </div>
 
       {/* Solo se deshabilita mientras se envía: nunca "hasta que sea válido" */}
-      <button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Enviando…" : "Inscribirme"}
+      <button type="submit" disabled={mutacion.isPending}>
+        {mutacion.isPending ? "Enviando inscripción…" : "Inscribirme"}
       </button>
+
+      {/* Error del servidor: role="alert" lo anuncia en cuanto aparece */}
+      {mutacion.isError && (
+        <p role="alert" className="aviso-error">
+          No se ha podido completar la inscripción. {mutacion.error.message}
+        </p>
+      )}
 
       {/* Región viva siempre presente: role="status" anuncia el éxito sin interrumpir */}
       <div role="status" className="estado">
-        {ultimaInscripcion && (
-          <p className="ok">¡Inscripción enviada, {ultimaInscripcion.nombre}!</p>
+        {mutacion.isSuccess && (
+          <p className="ok">
+            ¡Inscripción completada, {mutacion.data.nombre}! Ya apareces en la lista de participantes.
+          </p>
         )}
       </div>
     </form>
