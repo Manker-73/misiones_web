@@ -4,8 +4,105 @@
   box-sizing: border-box;
 }
 
+:root {
+  --color-texto: #1f2328;
+  --color-borde: #8c959f;
+  --color-acento: #0b5cad;
+  --color-error: #b3261e;
+  --color-ok: #1a7f37;
+}
+
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
   line-height: 1.5;
+  color: var(--color-texto);
+  background: #f6f8fa;
+}
+
+.contenedor {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* ---------- Formulario ---------- */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+}
+
+.formulario h2 {
+  margin: 0;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.campo label,
+.etiqueta {
+  font-weight: 600;
+  margin: 0;
+}
+
+.campo input:not([type="checkbox"]) {
+  padding: 0.5rem;
+  font: inherit;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+}
+
+.campo-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.25rem 1rem;
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400 !important;
+}
+
+button {
+  padding: 0.6rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-acento);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 0.9rem;
+}
+
+.ok {
+  margin: 0;
+  color: var(--color-ok);
+  font-weight: 600;
 }
