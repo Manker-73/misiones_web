@@ -1,0 +1,38 @@
+{
+  "inscripciones": [
+    {
+      "id": "a1f3",
+      "nombre": "Lucía Martín",
+      "email": "lucia.martin@ejemplo.com",
+      "nacimiento": "2006-04-12",
+      "primeraCompeticion": false,
+      "wcaId": "2019MART07",
+      "eventos": ["333", "333oh", "skewb"],
+      "media333": 11.84,
+      "aceptaNormas": true,
+      "fechaInscripcion": "2026-11-10T18:22:05.000Z"
+    },
+    {
+      "id": "b7c2",
+      "nombre": "Pablo Ruiz",
+      "email": "pablo.ruiz@ejemplo.com",
+      "nacimiento": "2012-09-30",
+      "primeraCompeticion": true,
+      "eventos": ["222", "pyram"],
+      "aceptaNormas": true,
+      "fechaInscripcion": "2026-11-12T09:47:31.000Z"
+    },
+    {
+      "id": "c9d4",
+      "nombre": "Marta Gómez",
+      "email": "marta.gomez@ejemplo.com",
+      "nacimiento": "1998-01-25",
+      "primeraCompeticion": false,
+      "wcaId": "2015GOME02",
+      "eventos": ["333", "444", "555", "333bf", "minx"],
+      "media333": 9.31,
+      "aceptaNormas": true,
+      "fechaInscripcion": "2026-11-14T20:05:12.000Z"
+    }
+  ]
+}

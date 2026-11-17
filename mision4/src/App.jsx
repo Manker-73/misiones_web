@@ -1,4 +1,5 @@
 import FormularioInscripcion from "./components/FormularioInscripcion";
+import ListaInscripciones from "./components/ListaInscripciones";
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
       </header>
 
       <FormularioInscripcion />
+      <ListaInscripciones />
     </main>
   );
 }

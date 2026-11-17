@@ -180,3 +180,120 @@ fieldset legend {
 .campo [aria-invalid="true"]:not([type="checkbox"]) {
   border: 2px solid var(--color-error);
 }
+
+/* ---------- Listado de participantes ---------- */
+.lista {
+  margin-top: 2rem;
+}
+
+.lista-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.lista h2 {
+  margin: 0 0 1rem;
+}
+
+.contador {
+  font-weight: 400;
+  color: #57606a;
+}
+
+.actualizando,
+.cargando,
+.vacio {
+  color: #57606a;
+}
+
+.aviso-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  color: var(--color-error);
+  background: #fff0ee;
+  border: 1px solid var(--color-error);
+  border-radius: 6px;
+}
+
+.aviso-error p {
+  margin: 0;
+}
+
+.tarjetas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tarjeta {
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+}
+
+.tarjeta-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tarjeta h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.insignia {
+  padding: 0.1rem 0.5rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+  color: var(--color-acento);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+
+.insignia.nuevo {
+  font-family: inherit;
+  color: var(--color-ok);
+}
+
+.eventos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.75rem 0 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.eventos li {
+  padding: 0.1rem 0.5rem;
+  font-size: 0.85rem;
+  background: #eef2f6;
+  border-radius: 4px;
+}
+
+.detalle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #57606a;
+}
+
+/* Texto solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
