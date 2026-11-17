@@ -5,16 +5,13 @@ import {
   esquemaInscripcion,
   valoresIniciales,
   EVENTOS,
-  EDAD_MIN,
-  EDAD_MAX,
+  MESES,
 } from "../schemas/inscripcion";
 
-// Fecha de hoy menos N años, en formato YYYY-MM-DD (lo que espera <input type="date">)
-function haceAnios(n) {
-  const d = new Date();
-  d.setFullYear(d.getFullYear() - n);
-  return d.toISOString().slice(0, 10);
-}
+// Si cambia una parte de la fecha, hay que revalidar también las otras dos
+// (p. ej. el error "febrero no tiene 31 días" está en el día, pero se arregla cambiando el mes)
+const PARTES_FECHA = ["nacimiento.dia", "nacimiento.mes", "nacimiento.anio"];
+const depsFecha = (parte) => PARTES_FECHA.filter((p) => p !== parte);
 
 function FormularioInscripcion() {
   const [ultimaInscripcion, setUltimaInscripcion] = useState(null);
@@ -36,6 +33,10 @@ function FormularioInscripcion() {
   const primeraCompeticion = watch("primeraCompeticion");
   const eventos = watch("eventos");
   const compite333 = eventos?.includes("333");
+
+  // La fecha muestra un único mensaje para el grupo (el schema solo genera uno a la vez)
+  const errorNacimiento =
+    errors.nacimiento?.dia || errors.nacimiento?.mes || errors.nacimiento?.anio;
 
   async function onSubmit(datos) {
     // Simulamos la petición; en el paso 6 la cambiaremos por useMutation
@@ -60,17 +61,54 @@ function FormularioInscripcion() {
         {errors.email && <p className="error">{errors.email.message}</p>}
       </div>
 
-      <div className="campo">
-        <label htmlFor="fechaNacimiento">Fecha de nacimiento</label>
-        <input
-          id="fechaNacimiento"
-          type="date"
-          min={haceAnios(EDAD_MAX)}
-          max={haceAnios(EDAD_MIN)}
-          {...register("fechaNacimiento")}
-        />
-        {errors.fechaNacimiento && <p className="error">{errors.fechaNacimiento.message}</p>}
-      </div>
+      <fieldset className="campo grupo-fecha">
+        <legend className="etiqueta">Fecha de nacimiento</legend>
+        <p className="pista">Por ejemplo: 27 marzo 2007</p>
+
+        <div className="fecha">
+          <div className="parte-fecha">
+            <label htmlFor="nacimiento-dia">Día</label>
+            <input
+              id="nacimiento-dia"
+              inputMode="numeric"
+              maxLength={2}
+              autoComplete="bday-day"
+              className="dia"
+              {...register("nacimiento.dia", { deps: depsFecha("nacimiento.dia") })}
+            />
+          </div>
+
+          <div className="parte-fecha">
+            <label htmlFor="nacimiento-mes">Mes</label>
+            <select
+              id="nacimiento-mes"
+              autoComplete="bday-month"
+              {...register("nacimiento.mes", { deps: depsFecha("nacimiento.mes") })}
+            >
+              <option value="">— Mes —</option>
+              {MESES.map((mes, i) => (
+                <option key={mes} value={i + 1}>
+                  {mes}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="parte-fecha">
+            <label htmlFor="nacimiento-anio">Año</label>
+            <input
+              id="nacimiento-anio"
+              inputMode="numeric"
+              maxLength={4}
+              autoComplete="bday-year"
+              className="anio"
+              {...register("nacimiento.anio", { deps: depsFecha("nacimiento.anio") })}
+            />
+          </div>
+        </div>
+
+        {errorNacimiento && <p className="error">{errorNacimiento.message}</p>}
+      </fieldset>
 
       <div className="campo campo-check">
         <input

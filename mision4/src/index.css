@@ -60,6 +60,52 @@ body {
   border-radius: 6px;
 }
 
+.campo select {
+  padding: 0.5rem;
+  font: inherit;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* ---------- Fecha en tres campos ---------- */
+.grupo-fecha {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.pista {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #57606a;
+}
+
+.fecha {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.parte-fecha {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.parte-fecha label {
+  font-weight: 400;
+}
+
+.parte-fecha .dia {
+  width: 4ch;
+  box-sizing: content-box;
+}
+
+.parte-fecha .anio {
+  width: 6ch;
+  box-sizing: content-box;
+}
+
 .campo-check {
   flex-direction: row;
   align-items: center;

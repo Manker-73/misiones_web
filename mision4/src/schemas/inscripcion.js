@@ -23,9 +23,12 @@ export const EDAD_MAX = 100;
 // Formato oficial del WCA ID: año de la 1ª competición + 4 letras + 2 dígitos (2019GARC01)
 const REGEX_WCA_ID = /^(19|20)\d{2}[A-Z]{4}\d{2}$/;
 
-function calcularEdad(fechaISO) {
-  const nacimiento = new Date(fechaISO);
-  const hoy = new Date();
+export const MESES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+function calcularEdad(nacimiento, hoy = new Date()) {
   let edad = hoy.getFullYear() - nacimiento.getFullYear();
   const aunNoCumplido =
     hoy.getMonth() < nacimiento.getMonth() ||
@@ -33,6 +36,42 @@ function calcularEdad(fechaISO) {
   if (aunNoCumplido) edad--;
   return edad;
 }
+
+// Fecha de nacimiento en tres campos (día / mes / año).
+// Cada error se asigna al subcampo responsable, así RHF pone el foco justo ahí.
+// Si todo es correcto, se transforma en una fecha ISO "YYYY-MM-DD" para enviar al API.
+const esquemaNacimiento = z
+  .object({
+    dia: z.string().trim(),
+    mes: z.string(),
+    anio: z.string().trim(),
+  })
+  .superRefine(({ dia, mes, anio }, ctx) => {
+    const error = (campo, message) => ctx.addIssue({ code: "custom", path: [campo], message });
+
+    if (!dia && !mes && !anio) return error("dia", "Introduce tu fecha de nacimiento");
+    if (!dia) return error("dia", "Falta el día");
+    if (!mes) return error("mes", "Falta el mes");
+    if (!anio) return error("anio", "Falta el año");
+    if (!/^\d{1,2}$/.test(dia) || +dia < 1 || +dia > 31)
+      return error("dia", "El día debe ser un número entre 1 y 31");
+    if (!/^\d{4}$/.test(anio)) return error("anio", "El año debe tener 4 cifras (ej.: 2007)");
+
+    // new Date "corrige" fechas imposibles (31 de febrero → 3 de marzo): lo detectamos
+    // (setFullYear porque new Date(50, …) interpretaría el año 50 como 1950)
+    const fecha = new Date(2000, +mes - 1, +dia);
+    fecha.setFullYear(+anio);
+    if (fecha.getDate() !== +dia) {
+      return error("dia", `Esa fecha no existe: ${MESES[+mes - 1]} no tiene ${dia} días`);
+    }
+    if (fecha > new Date()) return error("anio", "La fecha no puede estar en el futuro");
+
+    const edad = calcularEdad(fecha);
+    if (edad < EDAD_MIN) return error("anio", `La edad mínima para competir es ${EDAD_MIN} años`);
+    if (edad > EDAD_MAX)
+      return error("anio", `Revisa el año: la edad máxima admitida es ${EDAD_MAX} años`);
+  })
+  .transform(({ dia, mes, anio }) => `${anio}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`);
 
 // Los <input> vacíos llegan como "": los convertimos en undefined para que .optional() funcione
 const vacioAUndefined = (v) => (typeof v === "string" && v.trim() === "" ? undefined : v);
@@ -47,20 +86,7 @@ export const esquemaInscripcion = z
 
     email: z.email({ error: "Introduce un email válido (nombre@ejemplo.com)" }),
 
-    fechaNacimiento: z
-      .iso.date({ error: "Introduce tu fecha de nacimiento" })
-      // superRefine para dar un único mensaje, el más relevante
-      .superRefine((f, ctx) => {
-        if (Number.isNaN(new Date(f).getTime())) return; // ya lo avisa iso.date
-        const edad = calcularEdad(f);
-        if (new Date(f) > new Date()) {
-          ctx.addIssue({ code: "custom", message: "La fecha no puede estar en el futuro" });
-        } else if (edad < EDAD_MIN) {
-          ctx.addIssue({ code: "custom", message: `La edad mínima para competir es ${EDAD_MIN} años` });
-        } else if (edad > EDAD_MAX) {
-          ctx.addIssue({ code: "custom", message: `Revisa la fecha: la edad máxima admitida es ${EDAD_MAX} años` });
-        }
-      }),
+    nacimiento: esquemaNacimiento,
 
     primeraCompeticion: z.boolean(),
 
@@ -119,7 +145,7 @@ export const esquemaInscripcion = z
 export const valoresIniciales = {
   nombre: "",
   email: "",
-  fechaNacimiento: "",
+  nacimiento: { dia: "", mes: "", anio: "" },
   primeraCompeticion: false,
   wcaId: "",
   eventos: [],
