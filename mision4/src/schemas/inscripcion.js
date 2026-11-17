@@ -20,7 +20,7 @@ const MAX_EVENTOS = 5;
 export const EDAD_MIN = 6;
 export const EDAD_MAX = 100;
 
-// Formato oficial del WCA ID: año de la 1ª competición + 4 letras + 2 dígitos (2019GARC01)
+// Formato oficial del WCA ID: año de la 1ª competición + 4 letras + 2 dígitos (2019ABCD01)
 const REGEX_WCA_ID = /^(19|20)\d{2}[A-Z]{4}\d{2}$/;
 
 export const MESES = [
@@ -103,7 +103,7 @@ export const esquemaInscripcion = z
         .string()
         .trim()
         .toUpperCase()
-        .regex(REGEX_WCA_ID, { error: "Formato de WCA ID no válido (ej.: 2019GARC01)" })
+        .regex(REGEX_WCA_ID, { error: "Formato de WCA ID no válido (ej.: 2019ABCD01)" })
         .optional()
     ),
 

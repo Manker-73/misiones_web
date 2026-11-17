@@ -50,15 +50,7 @@ function ListaInscripciones() {
                 {p.primeraCompeticion ? (
                   <span className="insignia nuevo">Primera competición</span>
                 ) : (
-                  <a
-                    className="insignia"
-                    href={`https://www.worldcubeassociation.org/persons/${p.wcaId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {p.wcaId}
-                    <span className="sr-only"> (perfil WCA, se abre en una pestaña nueva)</span>
-                  </a>
+                  <span className="insignia">{p.wcaId}</span>
                 )}
               </div>
 

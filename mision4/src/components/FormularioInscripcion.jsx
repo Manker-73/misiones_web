@@ -171,7 +171,7 @@ function FormularioInscripcion() {
             id="wcaId"
             autoComplete="off"
             spellCheck={false}
-            placeholder="2019GARC01"
+            placeholder="2019ABCD01"
             {...aria("wcaId", errors.wcaId, "pista-wcaId")}
             {...register("wcaId")}
           />

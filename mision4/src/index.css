@@ -287,13 +287,3 @@ fieldset legend {
   font-size: 0.9rem;
   color: #57606a;
 }
-
-/* Texto solo para lectores de pantalla */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
