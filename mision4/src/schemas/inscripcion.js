@@ -17,6 +17,8 @@ export const EVENTOS = {
 const CODIGOS_EVENTO = Object.keys(EVENTOS);
 const EVENTOS_A_CIEGAS = ["333bf"];
 const MAX_EVENTOS = 5;
+export const EDAD_MIN = 6;
+export const EDAD_MAX = 100;
 
 // Formato oficial del WCA ID: año de la 1ª competición + 4 letras + 2 dígitos (2019GARC01)
 const REGEX_WCA_ID = /^(19|20)\d{2}[A-Z]{4}\d{2}$/;
@@ -47,11 +49,17 @@ export const esquemaInscripcion = z
 
     fechaNacimiento: z
       .iso.date({ error: "Introduce tu fecha de nacimiento" })
-      .refine((f) => new Date(f) <= new Date(), {
-        error: "La fecha no puede estar en el futuro",
-      })
-      .refine((f) => calcularEdad(f) >= 6, {
-        error: "La edad mínima para competir es 6 años",
+      // superRefine para dar un único mensaje, el más relevante
+      .superRefine((f, ctx) => {
+        if (Number.isNaN(new Date(f).getTime())) return; // ya lo avisa iso.date
+        const edad = calcularEdad(f);
+        if (new Date(f) > new Date()) {
+          ctx.addIssue({ code: "custom", message: "La fecha no puede estar en el futuro" });
+        } else if (edad < EDAD_MIN) {
+          ctx.addIssue({ code: "custom", message: `La edad mínima para competir es ${EDAD_MIN} años` });
+        } else if (edad > EDAD_MAX) {
+          ctx.addIssue({ code: "custom", message: `Revisa la fecha: la edad máxima admitida es ${EDAD_MAX} años` });
+        }
       }),
 
     primeraCompeticion: z.boolean(),

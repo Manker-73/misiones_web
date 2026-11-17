@@ -1,7 +1,20 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { esquemaInscripcion, valoresIniciales, EVENTOS } from "../schemas/inscripcion";
+import {
+  esquemaInscripcion,
+  valoresIniciales,
+  EVENTOS,
+  EDAD_MIN,
+  EDAD_MAX,
+} from "../schemas/inscripcion";
+
+// Fecha de hoy menos N años, en formato YYYY-MM-DD (lo que espera <input type="date">)
+function haceAnios(n) {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - n);
+  return d.toISOString().slice(0, 10);
+}
 
 function FormularioInscripcion() {
   const [ultimaInscripcion, setUltimaInscripcion] = useState(null);
@@ -49,7 +62,13 @@ function FormularioInscripcion() {
 
       <div className="campo">
         <label htmlFor="fechaNacimiento">Fecha de nacimiento</label>
-        <input id="fechaNacimiento" type="date" {...register("fechaNacimiento")} />
+        <input
+          id="fechaNacimiento"
+          type="date"
+          min={haceAnios(EDAD_MAX)}
+          max={haceAnios(EDAD_MIN)}
+          {...register("fechaNacimiento")}
+        />
         {errors.fechaNacimiento && <p className="error">{errors.fechaNacimiento.message}</p>}
       </div>
 
