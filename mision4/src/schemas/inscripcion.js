@@ -38,7 +38,8 @@ function calcularEdad(nacimiento, hoy = new Date()) {
 }
 
 // Fecha de nacimiento en tres campos (día / mes / año).
-// Cada error se asigna al subcampo responsable, así RHF pone el foco justo ahí.
+// Cada error se asigna al subcampo responsable, así RHF pone el foco justo ahí
+// (puede haber dos a la vez: día inexistente + año fuera de rango).
 // Si todo es correcto, se transforma en una fecha ISO "YYYY-MM-DD" para enviar al API.
 const esquemaNacimiento = z
   .object({
@@ -57,15 +58,21 @@ const esquemaNacimiento = z
       return error("dia", "El día debe ser un número entre 1 y 31");
     if (!/^\d{4}$/.test(anio)) return error("anio", "El año debe tener 4 cifras (ej.: 2007)");
 
-    // new Date "corrige" fechas imposibles (31 de febrero → 3 de marzo): lo detectamos
+    // Fecha que no existe (31 de febrero, 29 de febrero en año no bisiesto…).
+    // No cortamos aquí: el año se sigue revisando, por si también está mal.
     // (setFullYear porque new Date(50, …) interpretaría el año 50 como 1950)
-    const fecha = new Date(2000, +mes - 1, +dia);
-    fecha.setFullYear(+anio);
-    if (fecha.getDate() !== +dia) {
-      return error("dia", `Esa fecha no existe: ${MESES[+mes - 1]} no tiene ${dia} días`);
+    const ultimoDiaDelMes = new Date(2000, 0, 1);
+    ultimoDiaDelMes.setFullYear(+anio, +mes, 0); // día 0 del mes siguiente = último de este
+    const diasDelMes = ultimoDiaDelMes.getDate();
+    if (+dia > diasDelMes) {
+      error("dia", `Esa fecha no existe: ${MESES[+mes - 1]} de ${anio} no tiene ${dia} días`);
     }
-    if (fecha > new Date()) return error("anio", "La fecha no puede estar en el futuro");
 
+    // Para la edad usamos el día más cercano que sí existe (29-02-1900 → 28-02-1900)
+    const fecha = new Date(2000, 0, 1);
+    fecha.setFullYear(+anio, +mes - 1, Math.min(+dia, diasDelMes));
+
+    if (fecha > new Date()) return error("anio", "La fecha no puede estar en el futuro");
     const edad = calcularEdad(fecha);
     if (edad < EDAD_MIN) return error("anio", `La edad mínima para competir es ${EDAD_MIN} años`);
     if (edad > EDAD_MAX)

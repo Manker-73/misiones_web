@@ -34,9 +34,10 @@ function FormularioInscripcion() {
   const eventos = watch("eventos");
   const compite333 = eventos?.includes("333");
 
-  // La fecha muestra un único mensaje para el grupo (el schema solo genera uno a la vez)
-  const errorNacimiento =
-    errors.nacimiento?.dia || errors.nacimiento?.mes || errors.nacimiento?.anio;
+  // Errores de la fecha, en el orden de los campos (puede haber más de uno: día + año)
+  const erroresNacimiento = ["dia", "mes", "anio"]
+    .map((parte) => errors.nacimiento?.[parte]?.message)
+    .filter(Boolean);
 
   async function onSubmit(datos) {
     // Simulamos la petición; en el paso 6 la cambiaremos por useMutation
@@ -107,7 +108,11 @@ function FormularioInscripcion() {
           </div>
         </div>
 
-        {errorNacimiento && <p className="error">{errorNacimiento.message}</p>}
+        {erroresNacimiento.map((mensaje) => (
+          <p key={mensaje} className="error">
+            {mensaje}
+          </p>
+        ))}
       </fieldset>
 
       <div className="campo campo-check">
