@@ -287,3 +287,13 @@ fieldset legend {
   font-size: 0.9rem;
   color: #57606a;
 }
+
+/* Aviso de registros descartados por la validación del API */
+.aviso-descartadas {
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.75rem;
+  color: #7a4d00;
+  background: #fff8e6;
+  border: 1px solid #d4a72c;
+  border-radius: 6px;
+}

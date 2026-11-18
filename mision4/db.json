@@ -1,6 +1,16 @@
 {
   "inscripciones": [
     {
+      "id": "zz00",
+      "nombre": "",
+      "email": "esto-no-es-un-email",
+      "nacimiento": "31/02/2007",
+      "primeraCompeticion": "no",
+      "eventos": ["333", "4x4x4"],
+      "media333": "rápido",
+      "aceptaNormas": true
+    },
+    {
       "id": "a1f3",
       "nombre": "Lucía Martín",
       "email": "lucia.martin@ejemplo.com",

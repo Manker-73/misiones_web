@@ -4,8 +4,9 @@ import { EVENTOS } from "../schemas/inscripcion";
 const formatoFecha = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" });
 
 function ListaInscripciones() {
-  const { data: inscripciones, isPending, isError, error, isFetching, refetch } =
-    useInscripciones();
+  const { data, isPending, isError, error, isFetching, refetch } = useInscripciones();
+  const inscripciones = data?.inscripciones;
+  const descartadas = data?.descartadas ?? 0;
 
   return (
     <section className="lista" aria-labelledby="titulo-lista">
@@ -35,6 +36,14 @@ function ListaInscripciones() {
             Reintentar
           </button>
         </div>
+      )}
+
+      {/* BONUS: registros que el servidor devolvió pero no pasaron la validación de Zod */}
+      {descartadas > 0 && (
+        <p className="aviso-descartadas">
+          ⚠️ Se {descartadas === 1 ? "ha" : "han"} ocultado {descartadas}{" "}
+          {descartadas === 1 ? "inscripción" : "inscripciones"} con datos no válidos.
+        </p>
       )}
 
       {inscripciones?.length === 0 && (

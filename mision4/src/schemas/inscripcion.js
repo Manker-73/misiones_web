@@ -159,3 +159,18 @@ export const valoresIniciales = {
   media333: "",
   aceptaNormas: false,
 };
+
+// ---------- Respuesta del API ----------
+// No nos fiamos de lo que devuelve el servidor: cada inscripción que llega
+// se valida con este esquema antes de mostrarla (ver services/inscripciones.js).
+export const esquemaInscripcionApi = z.object({
+  id: z.union([z.string(), z.number()]),
+  nombre: z.string().min(1),
+  email: z.email(),
+  nacimiento: z.iso.date(),
+  primeraCompeticion: z.boolean(),
+  wcaId: z.string().regex(REGEX_WCA_ID).optional(),
+  eventos: z.array(z.enum(CODIGOS_EVENTO)).min(1),
+  media333: z.number().positive().optional(),
+  fechaInscripcion: z.iso.datetime(),
+});

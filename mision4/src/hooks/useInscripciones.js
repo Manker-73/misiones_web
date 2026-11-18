@@ -16,7 +16,11 @@ export function useInscripciones() {
     queryKey: clavesInscripciones.lista(),
     queryFn: obtenerInscripciones,
     // select transforma los datos para la vista sin tocar lo que hay en caché
-    select: (inscripciones) => [...inscripciones].sort(porFechaDesc),
+    // Como el servicio ya ha validado con Zod, aquí fechaInscripcion siempre existe
+    select: ({ inscripciones, descartadas }) => ({
+      inscripciones: [...inscripciones].sort(porFechaDesc),
+      descartadas,
+    }),
   });
 }
 
