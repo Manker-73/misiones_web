@@ -44,6 +44,8 @@ Para validar el resultado, revisé cada sección en 360, 768 y 1280 px con el mo
 
    En "Funciones", cada bloque es un `flex-col` en móvil que pasa a `md:flex-row` en escritorio, y el bloque central usa `md:flex-row-reverse` para alternar texto e imagen sin duplicar HTML. En la lista del modo aprender, `ml-auto` empuja el algoritmo al extremo derecho de su fila.
 
+   En "Cómo funciona", los cuatro pasos son una lista ordenada (`<ol>`) con Grid de 1, 2 o 4 columnas (`sm:grid-cols-2 lg:grid-cols-4`). Cada paso lleva un borde superior con un color de pegatina distinto (`border-t-8 border-cube-*`). La cabecera de la sección usa Flexbox para separar el título del enlace a la guía completa en escritorio (`md:justify-between`).
+
    No hay posicionamiento absoluto ni márgenes mágicos; la cabecera solo usa `sticky`, y las secciones usan `scroll-mt-20` para que la cabecera fija no tape los títulos al navegar desde el menú.
 
 5. **Modo oscuro por clase:** `@custom-variant dark (&:where(.dark, .dark *))` hace que `dark:` dependa de la clase `.dark` en `<html>`, no de la preferencia del sistema, para poder cambiarlo con un botón. El tema oscuro es el de por defecto. Un pequeño script en el `<head>` aplica el tema guardado en `localStorage` antes de pintar, para que no haya parpadeo. El botón expone su estado con `aria-pressed`. El acento cambia de tema a tema (`text-cube-blue` en claro, `dark:text-cube-yellow` en oscuro), porque el amarillo no tiene contraste suficiente sobre fondo claro.
