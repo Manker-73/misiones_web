@@ -36,7 +36,12 @@ Para validar el resultado, revisé cada sección en 360, 768 y 1280 px con el mo
    - `md:` muestra el menú de navegación.
    - `lg:` pasa el hero a dos columnas.
 
-4. **Flexbox y Grid donde corresponde:** Flexbox para alinear en una dimensión (cabecera, grupo de botones). Grid para estructuras bidimensionales: el hero en dos columnas y la cara del cubo como un `grid-cols-3` de pegatinas cuadradas (`aspect-square`). No hay posicionamiento absoluto ni márgenes mágicos; la cabecera solo usa `sticky`.
+4. **Flexbox y Grid donde corresponde:** Flexbox para alinear en una dimensión: la cabecera, los grupos de botones, las etiquetas de puzzles con `flex-wrap` y el interior de cada tarjeta, donde `mt-auto` empuja el enlace al fondo. Grid para estructuras bidimensionales:
+   - El hero en dos columnas, y la cara del cubo como un `grid-cols-3` de pegatinas cuadradas (`aspect-square`).
+   - La sección de puzzles, con 1, 2 o 3 columnas según el ancho. La tarjeta grande de WCA Puzzles ocupa dos columnas con `md:col-span-2`.
+   - La mini cara del cubo vendado, que usa `col-span-2` y `row-span-2` para representar piezas unidas.
+
+   No hay posicionamiento absoluto ni márgenes mágicos; la cabecera solo usa `sticky`, y las secciones usan `scroll-mt-20` para que la cabecera fija no tape los títulos al navegar desde el menú.
 
 5. **Modo oscuro por clase:** `@custom-variant dark (&:where(.dark, .dark *))` hace que `dark:` dependa de la clase `.dark` en `<html>`, no de la preferencia del sistema, para poder cambiarlo con un botón. El tema oscuro es el de por defecto. Un pequeño script en el `<head>` aplica el tema guardado en `localStorage` antes de pintar, para que no haya parpadeo. El botón expone su estado con `aria-pressed`. El acento cambia de tema a tema (`text-cube-blue` en claro, `dark:text-cube-yellow` en oscuro), porque el amarillo no tiene contraste suficiente sobre fondo claro.
 
