@@ -10,12 +10,18 @@ Misión M5 · Pixel Perfect: landing page de **Cubo Solver**, mi generador de sc
 6. **Bonus:** recarga la página para ver las animaciones de entrada (`animate-fade-up` en el texto y `animate-sticker-pop` en las pegatinas del cubo), definidas con `@keyframes` dentro de `@theme`.
 
 ## Uso de IA
-Usé Claude como pareja de programación: para montar el proyecto con Vite y Tailwind v4 a partir del enunciado, y para generar una primera versión del sistema de diseño y de cada sección, que después revisé en el navegador en los distintos anchos y temas.
-Ejemplos de prompts reales:
-- "Vamos a empezar con el código, ve diciéndome cómo empezar." (Decidimos hacer la landing por secciones y revisar cada una antes de pasar a la siguiente.)
-- "Se ve fatal." (La página salía sin estilos: el servidor de Vite se había arrancado antes de crear `vite.config.js`, así que el plugin de Tailwind no estaba activo. Se arregló reiniciando `npm run dev`.)
+Usé Claude como pareja de programación durante todo el proyecto. Me ayudó a montar el entorno con Vite y Tailwind v4 a partir del enunciado, a plantear un sistema de diseño coherente y a generar una primera versión de cada sección. Trabajamos por iteraciones cortas: Claude proponía el código de una sección, yo la revisaba en el navegador y, antes de pasar a la siguiente, la ajustaba o pedía cambios.
 
-Iteré y validé manualmente: elegí el producto y la dirección visual, comprobé la página en 360, 768 y 1280 px y revisé el contraste en ambos temas.
+Las decisiones de fondo fueron mías:
+- **El producto**, mi propio proyecto Cubo Solver, en lugar de uno inventado.
+- **La dirección visual**: los colores de pegatina del cubo como paleta y oscuro por defecto.
+- **El alcance**: una landing estática sin frameworks, para que todo el peso recaiga en Tailwind.
+
+Ejemplos de prompts:
+- *"Quiero empezar a programar la landing. Guíame paso a paso: ¿por dónde empiezo y en qué orden construimos las secciones?"* Acordamos dividir la landing en secciones (hero, puzzles, funciones, cómo funciona, CTA) y validar cada una antes de seguir.
+- *"He abierto la página y se ve completamente rota, como si no tuviera ningún estilo. ¿Qué está fallando?"* Revisando el CSS que servía Vite vimos que Tailwind no se estaba compilando: el servidor se había arrancado antes de crear `vite.config.js`, así que el plugin no estaba cargado. Bastó con reiniciar `npm run dev`. Me sirvió para entender que Vite no detecta un archivo de configuración nuevo en caliente.
+
+Para validar el resultado, revisé cada sección en 360, 768 y 1280 px con el modo dispositivo de las DevTools. También comprobé el contraste del texto y de los acentos en los dos temas y que la elección de tema se mantuviera al recargar.
 
 ## Autopsia
 1. **Configuración CSS-first de Tailwind v4:** No hay `tailwind.config.js` ni PostCSS. Tailwind entra como plugin de Vite (`@tailwindcss/vite` en `vite.config.js`) y toda la configuración vive en `src/style.css`: `@import "tailwindcss"` y un bloque `@theme` con los tokens.
