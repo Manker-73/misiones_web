@@ -40,6 +40,9 @@ Para validar el resultado, revisé cada sección en 360, 768 y 1280 px con el mo
    - El hero en dos columnas, y la cara del cubo como un `grid-cols-3` de pegatinas cuadradas (`aspect-square`).
    - La sección de puzzles, con 1, 2 o 3 columnas según el ancho. La tarjeta grande de WCA Puzzles ocupa dos columnas con `md:col-span-2`.
    - La mini cara del cubo vendado, que usa `col-span-2` y `row-span-2` para representar piezas unidas.
+   - El desarrollo plano del cubo en "Funciones": una rejilla de `grid-cols-4 grid-rows-3` donde cada cara se coloca en su celda con `col-start-*` y `row-start-*`, sin posicionamiento absoluto.
+
+   En "Funciones", cada bloque es un `flex-col` en móvil que pasa a `md:flex-row` en escritorio, y el bloque central usa `md:flex-row-reverse` para alternar texto e imagen sin duplicar HTML. En la lista del modo aprender, `ml-auto` empuja el algoritmo al extremo derecho de su fila.
 
    No hay posicionamiento absoluto ni márgenes mágicos; la cabecera solo usa `sticky`, y las secciones usan `scroll-mt-20` para que la cabecera fija no tape los títulos al navegar desde el menú.
 
