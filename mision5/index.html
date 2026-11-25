@@ -1,15 +1,107 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mision5</title>
+    <meta name="description" content="Cubo Solver: generador de scrambles y solucionador visual de puzzles de rubik." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Cubo Solver · Mezcla. Resuelve. Aprende.</title>
+
+    <!-- Evita el parpadeo de tema: se aplica antes de pintar -->
+    <script>
+      if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark')
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+
     <script type="module" src="/src/main.js"></script>
   </head>
-  <body class="bg-surface text-brand-900 dark:bg-surface-dark dark:text-brand-50">
-    <main class="grid min-h-dvh place-items-center p-6">
-      <h1 class="animate-fade-up text-4xl font-bold text-brand-500">Tailwind v4 funcionando</h1>
+
+  <body class="bg-paper-50 font-display text-ink-900 antialiased dark:bg-ink-950 dark:text-paper-100">
+    <!-- ════════ CABECERA ════════ -->
+    <header class="sticky top-0 z-10 border-b border-paper-200 bg-paper-50/85 backdrop-blur dark:border-ink-800 dark:bg-ink-950/85">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-8">
+        <a href="#" class="flex items-center gap-2 font-bold">
+          <!-- Logo: mini cubo 2x2 -->
+          <span class="grid grid-cols-2 gap-0.5" aria-hidden="true">
+            <span class="size-2.5 rounded-[2px] bg-cube-red"></span>
+            <span class="size-2.5 rounded-[2px] bg-cube-blue"></span>
+            <span class="size-2.5 rounded-[2px] bg-cube-yellow"></span>
+            <span class="size-2.5 rounded-[2px] bg-cube-green"></span>
+          </span>
+          Cubo Solver
+        </a>
+
+        <nav class="hidden md:block" aria-label="Principal">
+          <ul class="flex gap-8 text-sm font-medium text-ink-700 dark:text-ink-400">
+            <li><a href="#puzzles" class="hover:text-ink-950 dark:hover:text-paper-50">Puzzles</a></li>
+            <li><a href="#funciones" class="hover:text-ink-950 dark:hover:text-paper-50">Funciones</a></li>
+            <li><a href="#como-funciona" class="hover:text-ink-950 dark:hover:text-paper-50">Cómo funciona</a></li>
+          </ul>
+        </nav>
+
+        <div class="flex items-center gap-2">
+          <button id="theme-toggle" type="button" aria-label="Cambiar tema claro/oscuro" aria-pressed="true"
+            class="grid size-9 place-items-center rounded-full border border-paper-200 text-lg transition hover:bg-paper-100 dark:border-ink-700 dark:hover:bg-ink-800">
+            <span class="dark:hidden">☾</span>
+            <span class="hidden dark:inline">☀</span>
+          </button>
+          <a href="https://github.com/Manker-73/Cubo-solver"
+            class="rounded-full bg-ink-900 px-4 py-2 text-sm font-medium text-paper-50 transition hover:bg-ink-700 dark:bg-cube-yellow dark:text-ink-950 dark:hover:bg-cube-white">
+            GitHub
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ════════ HERO ════════ -->
+      <section class="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 md:px-8 md:py-24 lg:grid-cols-2 lg:gap-16">
+        <div class="animate-fade-up">
+          <p class="mb-4 inline-block rounded-full bg-paper-100 px-3 py-1 font-mono text-xs text-ink-700 dark:bg-ink-800 dark:text-ink-400">
+            NxN · Megaminx · Square-1 · FTO · y más
+          </p>
+          <h1 class="text-4xl leading-[1.05] font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            Mezcla.<br />
+            <span class="text-cube-blue dark:text-cube-yellow">Resuelve.</span><br />
+            Aprende.
+          </h1>
+          <p class="mt-6 max-w-prose text-lg text-ink-700 dark:text-ink-400">
+            Genera scrambles oficiales, mete el estado de tu puzzle pegatina a pegatina y obtén
+            la solución paso a paso, en 3D y explicada con métodos humanos.
+          </p>
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a href="#puzzles"
+              class="rounded-xl bg-cube-blue px-6 py-3 text-center font-medium text-cube-white transition hover:brightness-110">
+              Elegir puzzle
+            </a>
+            <a href="#como-funciona"
+              class="rounded-xl border border-paper-200 px-6 py-3 text-center font-medium transition hover:bg-paper-100 dark:border-ink-700 dark:hover:bg-ink-800">
+              Cómo funciona
+            </a>
+          </div>
+        </div>
+
+        <!-- Cara del cubo animada + scramble -->
+        <div class="mx-auto w-full max-w-sm">
+          <div class="grid grid-cols-3 gap-2 rounded-3xl bg-ink-900 p-3 shadow-2xl shadow-cube-blue/20 sm:gap-3 sm:p-4" aria-hidden="true">
+            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-red"></div>
+            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-yellow [animation-delay:60ms]"></div>
+            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-blue [animation-delay:120ms]"></div>
+            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-green [animation-delay:180ms]"></div>
+            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-white [animation-delay:240ms]"></div>
+            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-orange [animation-delay:300ms]"></div>
+            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-yellow [animation-delay:360ms]"></div>
+            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-red [animation-delay:420ms]"></div>
+            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-green [animation-delay:480ms]"></div>
+          </div>
+          <p class="mt-4 rounded-xl bg-paper-100 px-4 py-3 text-center font-mono text-sm break-words text-ink-800 dark:bg-ink-900 dark:text-paper-200">
+            R U R' U' F2 D L' B2 U2 R'
+          </p>
+        </div>
+      </section>
     </main>
   </body>
 </html>
