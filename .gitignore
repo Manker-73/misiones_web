@@ -430,3 +430,5 @@ FodyWeavers.xsd
 mision1/Web.code-workspace
 mision3/src/listado.txt
 mision3/src/pasar a texto.bat
+
+*.zip
