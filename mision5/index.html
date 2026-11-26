@@ -7,9 +7,10 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Cubo Solver · Mezcla. Resuelve. Aprende.</title>
 
-    <!-- Evita el parpadeo de tema: se aplica antes de pintar -->
+    <!-- Tema antes de pintar (sin parpadeo): elección guardada > preferencia del sistema > oscuro -->
     <script>
-      if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark')
+      const tema = localStorage.getItem('theme') ?? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+      document.documentElement.classList.toggle('dark', tema === 'dark')
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -26,10 +27,10 @@
         <a href="#" class="flex items-center gap-2 font-bold">
           <!-- Logo: mini cubo 2x2 -->
           <span class="grid grid-cols-2 gap-0.5" aria-hidden="true">
-            <span class="size-2.5 rounded-[2px] bg-cube-red"></span>
-            <span class="size-2.5 rounded-[2px] bg-cube-blue"></span>
-            <span class="size-2.5 rounded-[2px] bg-cube-yellow"></span>
-            <span class="size-2.5 rounded-[2px] bg-cube-green"></span>
+            <span class="size-2.5 rounded-pip bg-cube-red"></span>
+            <span class="size-2.5 rounded-pip bg-cube-blue"></span>
+            <span class="size-2.5 rounded-pip bg-cube-yellow"></span>
+            <span class="size-2.5 rounded-pip bg-cube-green"></span>
           </span>
           Cubo Solver
         </a>
@@ -54,12 +55,21 @@
           </a>
         </div>
       </div>
+
+      <!-- Navegación compacta en móvil (el menú completo aparece desde md:) -->
+      <nav class="border-t border-paper-200 md:hidden dark:border-ink-800" aria-label="Secciones">
+        <ul class="flex justify-around px-4 py-2 text-sm font-medium text-ink-600 dark:text-ink-300">
+          <li><a href="#puzzles" class="block px-2 py-1 hover:text-ink-950 dark:hover:text-paper-50">Puzzles</a></li>
+          <li><a href="#funciones" class="block px-2 py-1 hover:text-ink-950 dark:hover:text-paper-50">Funciones</a></li>
+          <li><a href="#como-funciona" class="block px-2 py-1 hover:text-ink-950 dark:hover:text-paper-50">Cómo funciona</a></li>
+        </ul>
+      </nav>
     </header>
 
     <main>
       <!-- ════════ HERO ════════ -->
-      <section class="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 md:px-8 md:py-24 lg:grid-cols-2 lg:gap-16">
-        <div class="animate-fade-up">
+      <section class="mx-auto grid max-w-6xl items-center gap-12 px-4 py-section md:grid-cols-2 md:px-8 md:py-section-lg lg:gap-16">
+        <div class="motion-safe:animate-fade-up">
           <p class="mb-4 inline-block rounded-full bg-paper-100 px-3 py-1 font-mono text-xs text-ink-700 dark:bg-ink-800 dark:text-ink-400">
             NxN · Megaminx · Square-1 · FTO · y más
           </p>
@@ -86,16 +96,16 @@
 
         <!-- Cara del cubo animada + scramble -->
         <div class="mx-auto w-full max-w-sm">
-          <div class="grid grid-cols-3 gap-2 rounded-3xl bg-ink-900 p-3 shadow-2xl shadow-cube-blue/20 sm:gap-3 sm:p-4" aria-hidden="true">
-            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-red"></div>
-            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-yellow [animation-delay:60ms]"></div>
-            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-blue [animation-delay:120ms]"></div>
-            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-green [animation-delay:180ms]"></div>
-            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-white [animation-delay:240ms]"></div>
-            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-orange [animation-delay:300ms]"></div>
-            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-yellow [animation-delay:360ms]"></div>
-            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-red [animation-delay:420ms]"></div>
-            <div class="aspect-square animate-sticker-pop rounded-sticker bg-cube-green [animation-delay:480ms]"></div>
+          <div class="grid grid-cols-3 gap-2 rounded-3xl bg-ink-900 p-3 shadow-cube sm:gap-3 sm:p-4" aria-hidden="true">
+            <div class="aspect-square motion-safe:animate-sticker-pop rounded-sticker bg-cube-red"></div>
+            <div class="aspect-square motion-safe:animate-sticker-pop rounded-sticker bg-cube-yellow stagger-1"></div>
+            <div class="aspect-square motion-safe:animate-sticker-pop rounded-sticker bg-cube-blue stagger-2"></div>
+            <div class="aspect-square motion-safe:animate-sticker-pop rounded-sticker bg-cube-green stagger-3"></div>
+            <div class="aspect-square motion-safe:animate-sticker-pop rounded-sticker bg-cube-white stagger-4"></div>
+            <div class="aspect-square motion-safe:animate-sticker-pop rounded-sticker bg-cube-orange stagger-5"></div>
+            <div class="aspect-square motion-safe:animate-sticker-pop rounded-sticker bg-cube-yellow stagger-6"></div>
+            <div class="aspect-square motion-safe:animate-sticker-pop rounded-sticker bg-cube-red stagger-7"></div>
+            <div class="aspect-square motion-safe:animate-sticker-pop rounded-sticker bg-cube-green stagger-8"></div>
           </div>
           <p class="mt-4 rounded-xl bg-paper-100 px-4 py-3 text-center font-mono text-sm break-words text-ink-800 dark:bg-ink-900 dark:text-paper-200">
             R U R' U' F2 D L' B2 U2 R'
@@ -104,8 +114,8 @@
       </section>
 
       <!-- ════════ PUZZLES ════════ -->
-      <section id="puzzles" class="scroll-mt-20 border-t border-paper-200 dark:border-ink-800">
-        <div class="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
+      <section id="puzzles" class="scroll-mt-28 md:scroll-mt-20 border-t border-paper-200 dark:border-ink-800">
+        <div class="mx-auto max-w-6xl px-4 py-section md:px-8 md:py-section-lg">
           <header class="max-w-2xl">
             <p class="font-mono text-sm text-cube-blue dark:text-cube-yellow">01 · Puzzles</p>
             <h2 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Un solver para cada puzzle de tu estantería</h2>
@@ -121,7 +131,7 @@
                 <h3 class="text-2xl font-bold sm:text-3xl">WCA Puzzles</h3>
                 <span class="rounded-full bg-cube-white/15 px-3 py-1 font-mono text-xs">11 puzzles</span>
               </div>
-              <p class="mt-3 max-w-md text-cube-white/85">
+              <p class="mt-3 max-w-md text-cube-white">
                 Todos los puzzles oficiales de competición, con scrambles al estilo WCA y solución paso a paso.
               </p>
               <ul class="mt-6 flex flex-wrap gap-2 font-mono text-sm">
@@ -145,17 +155,17 @@
             <!-- Bandaged Cubes -->
             <article class="flex flex-col rounded-3xl bg-cube-orange p-6 text-ink-950 sm:p-8">
               <h3 class="text-2xl font-bold">Bandaged Cubes</h3>
-              <p class="mt-3 text-ink-900/80">
+              <p class="mt-3 text-ink-950">
                 Une piezas con tus propios bloqueos y resuelve cualquier configuración vendada de 3x3, 4x4 o 5x5.
               </p>
               <!-- Mini cara vendada: piezas unidas con col-span / row-span -->
               <div class="mt-6 grid w-32 grid-cols-3 gap-1" aria-hidden="true">
-                <span class="col-span-2 aspect-[2/1] rounded-sticker bg-ink-950/80"></span>
+                <span class="col-span-2 aspect-bar rounded-sticker bg-ink-950/80"></span>
                 <span class="aspect-square rounded-sticker bg-ink-950/30"></span>
                 <span class="row-span-2 rounded-sticker bg-ink-950/30"></span>
                 <span class="aspect-square rounded-sticker bg-ink-950/30"></span>
                 <span class="aspect-square rounded-sticker bg-ink-950/30"></span>
-                <span class="col-span-2 aspect-[2/1] rounded-sticker bg-ink-950/80"></span>
+                <span class="col-span-2 aspect-bar rounded-sticker bg-ink-950/80"></span>
               </div>
               <a href="https://manker-73.github.io/Cubo-solver/#/bandaged?bloqueos=B.BR.D.DB.DBR.DR.R.n%C3%BAcleo-BL.DBL-DF.DFR-DFL.FL-DL.L-F.FR-U.UB-UBL.UL-UBR.UR-UF.UFR" class="mt-auto self-start pt-8 font-medium underline decoration-2 underline-offset-4 hover:decoration-ink-950/40">
                 Abrir Bandaged Cubes →
@@ -183,8 +193,8 @@
       </section>
 
       <!-- ════════ FUNCIONES ════════ -->
-      <section id="funciones" class="scroll-mt-20 border-t border-paper-200 bg-paper-100 dark:border-ink-800 dark:bg-ink-900">
-        <div class="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
+      <section id="funciones" class="scroll-mt-28 md:scroll-mt-20 border-t border-paper-200 bg-paper-100 dark:border-ink-800 dark:bg-ink-900">
+        <div class="mx-auto max-w-6xl px-4 py-section md:px-8 md:py-section-lg">
           <header class="max-w-2xl">
             <p class="font-mono text-sm text-cube-blue dark:text-cube-yellow">02 · Funciones</p>
             <h2 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Más que un solver</h2>
@@ -279,8 +289,8 @@
       </section>
 
       <!-- ════════ CÓMO FUNCIONA ════════ -->
-      <section id="como-funciona" class="scroll-mt-20 border-t border-paper-200 dark:border-ink-800">
-        <div class="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
+      <section id="como-funciona" class="scroll-mt-28 md:scroll-mt-20 border-t border-paper-200 dark:border-ink-800">
+        <div class="mx-auto max-w-6xl px-4 py-section md:px-8 md:py-section-lg">
           <header class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div class="max-w-2xl">
               <p class="font-mono text-sm text-cube-blue dark:text-cube-yellow">03 · Cómo funciona</p>
@@ -318,11 +328,11 @@
       </section>
 
       <!-- ════════ CTA FINAL ════════ -->
-      <section class="px-4 pb-16 md:px-8 md:pb-24">
+      <section class="px-4 pb-section md:px-8 md:pb-section-lg">
         <div class="mx-auto flex max-w-6xl flex-col gap-10 rounded-3xl bg-cube-yellow p-8 text-ink-950 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
           <div class="max-w-xl">
             <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">¿Tienes un cubo a mano?</h2>
-            <p class="mt-4 text-lg text-ink-900/80">
+            <p class="mt-4 text-lg text-ink-950">
               Mézclalo, pinta su estado y deja que Cubo Solver te guíe hasta resolverlo. Gratis, sin registro y desde el navegador.
             </p>
             <div class="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -357,10 +367,10 @@
       <div class="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 text-sm text-ink-700 md:flex-row md:items-center md:justify-between md:px-8 dark:text-ink-400">
         <div class="flex items-center gap-2 font-bold text-ink-900 dark:text-paper-100">
           <span class="grid grid-cols-2 gap-0.5" aria-hidden="true">
-            <span class="size-2.5 rounded-[2px] bg-cube-red"></span>
-            <span class="size-2.5 rounded-[2px] bg-cube-blue"></span>
-            <span class="size-2.5 rounded-[2px] bg-cube-yellow"></span>
-            <span class="size-2.5 rounded-[2px] bg-cube-green"></span>
+            <span class="size-2.5 rounded-pip bg-cube-red"></span>
+            <span class="size-2.5 rounded-pip bg-cube-blue"></span>
+            <span class="size-2.5 rounded-pip bg-cube-yellow"></span>
+            <span class="size-2.5 rounded-pip bg-cube-green"></span>
           </span>
           Cubo Solver
         </div>

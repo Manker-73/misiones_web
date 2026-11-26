@@ -1,6 +1,6 @@
 import './style.css'
 
-// ── Cambio de tema (oscuro por defecto) ──
+// ── Cambio de tema: el botón guarda la elección; sin elección se sigue al sistema ──
 const root = document.documentElement
 const toggle = document.querySelector('#theme-toggle')
 
